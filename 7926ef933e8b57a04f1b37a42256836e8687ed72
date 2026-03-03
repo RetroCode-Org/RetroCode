@@ -1,0 +1,73 @@
+src/contextEngineering/curator.py
+  c4e2ca1265391f82 6-7,10-14,25,31-39,48-54,81,87,89-90,122,137,168,170-172,177,182,188-224,226,229-230,240
+pyproject.toml
+  c4e2ca1265391f82 1-2,4-21
+src/utils/modification/claude_md.py
+  c4e2ca1265391f82 1-7
+src/main.py
+  ad9592a2c6d436fd 1-4,17-19,21-30,58-63,65,78,81,129,131,138-141,143,145-157,162-166,169,172-173,207-210,212-213,223-225,234-235,242-247
+  c4e2ca1265391f82 9,13-16,37,40-57,64,66-68,72-74,76,84,87,124,142,144,161,171,174-175,177-180,182-190,192-199,201-205,218-220,226-233,237,239,241
+retro_config.yaml
+  c4e2ca1265391f82 9,11-14,16
+src/utils/ingestion/claude_reader.py
+  ad9592a2c6d436fd 1-10,13-16,18,20-37,49,83-97
+src/contextEngineering/reflector.py
+  c4e2ca1265391f82 5-6,60
+requirements.txt
+  c4e2ca1265391f82 1-6
+src/utils/inference/_commonstack.py
+  c4e2ca1265391f82 1-12,14-15,27,29,31,33-41,43,45-58,71-72
+README.md
+  c4e2ca1265391f82 2-80,82-103,105-107,109-146
+src/retro_config.py
+  c4e2ca1265391f82 1-84
+src/utils/inference/__init__.py
+  c4e2ca1265391f82 21,29,43
+src/contextEngineering/engine.py
+  c4e2ca1265391f82 4,6,10,14,25-27,30,32,66-69,71,73-77
+src/utils/modification/__init__.py
+  c4e2ca1265391f82 1-4
+src/utils/modification/base.py
+  c4e2ca1265391f82 1-35
+src/utils/ingestion/base.py
+  ad9592a2c6d436fd 1-29
+src/contextEngineering/config.py
+  c4e2ca1265391f82 1-27
+src/utils/inference/_openai.py
+  c4e2ca1265391f82 35
+src/utils/ingestion/__init__.py
+  ad9592a2c6d436fd 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.7",
+  "base_commit_sha": "7926ef933e8b57a04f1b37a42256836e8687ed72",
+  "prompts": {
+    "ad9592a2c6d436fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1399401a-6913-4513-bd6c-5bf3f2f6ac3f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 324,
+      "total_deletions": 15,
+      "accepted_lines": 252,
+      "overriden_lines": 22
+    },
+    "c4e2ca1265391f82": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "93c0895f-3a08-4039-8ea4-5ef17aa4f00b",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 790,
+      "total_deletions": 297,
+      "accepted_lines": 574,
+      "overriden_lines": 10
+    }
+  }
+}
