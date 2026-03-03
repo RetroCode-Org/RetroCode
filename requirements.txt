@@ -1,0 +1,14 @@
+# Config
+pyyaml>=6.0
+
+# HTTP (CommonStack provider)
+requests>=2.32
+
+# Required for the default Anthropic/Claude provider
+anthropic>=0.84.0
+
+# Required only if using LLM_PROVIDER=openai or LLM_PROVIDER=openrouter
+openai>=2.18.0
+
+# Required for running tests
+pytest>=9.0.0
