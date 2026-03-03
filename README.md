@@ -1,4 +1,4 @@
-![RetroCode](assets/imgs/retro_big.png)
+![RetroCode](assets/imgs/retro_wide.png)
 
 
 Turn your Claude Code session traces into an auto-updating project playbook.
