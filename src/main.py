@@ -205,6 +205,110 @@ def stop_daemon(working_dir: str, pid_file: str) -> None:
         print("[retro] no retro processes found")
 
 
+def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
+    """Run the round-level hypothesis generation pipeline."""
+    import copy
+    from src.hypoGen.trace_parser import parse_rounds
+    from src.hypoGen.labeler import label_round, LabelStore
+    from src.hypoGen.existing_hypothesis.seed_features import SEED_HYPOTHESES
+    from src.hypoGen.verifier.verify import verify, report
+    from src.hypoGen.analyzer.report import (
+        save_results_json, save_features_py, update_hypotheses_md,
+    )
+
+    out_dir = retro_dir / "hypoGen"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    reader = ClaudeReader()
+    trace_files = reader.find_trace_files(working_dir)
+    if not trace_files:
+        print(f"[retro] No trace files found for: {working_dir}")
+        print(f"  (looked in: {reader._project_dir(working_dir)})")
+        return
+
+    print(f"[retro] Found {len(trace_files)} session traces")
+
+    # Parse sessions into rounds
+    all_rounds: list[dict] = []
+    for fp in trace_files:
+        all_rounds.extend(parse_rounds(fp))
+
+    if not all_rounds:
+        print("[retro] No rounds found.")
+        return
+
+    print(f"[retro] Parsed {len(all_rounds)} rounds across {len(trace_files)} sessions")
+
+    # Label rounds (only explicit user rejections count)
+    store = LabelStore(str(out_dir / "labeled_traces.json"))
+    n_new = 0
+    for r in all_rounds:
+        existing = store.get(r["round_id"])
+        if existing is not None:
+            r["reward"] = existing
+        else:
+            r["reward"], reason = label_round(r["user_msg"], r["next_user_msg"])
+            store.set(r["round_id"], r["reward"], reason,
+                      user_msg=r["user_msg"], next_user_msg=r["next_user_msg"])
+            n_new += 1
+    store.save()
+
+    # Build round rows: each round is an independent data point
+    rows: list[dict] = []
+    for r in all_rounds:
+        rows.append({
+            "session_id": r["round_id"],   # use round_id as the unique key
+            "msgs": r["msgs"],
+            "n_msgs": r["n_msgs"],
+            "reward": r["reward"],
+        })
+
+    n_rejected = sum(1 for r in rows if r["reward"] == 0.0)
+    print(f"[retro] {store.summary()} ({n_new} newly labeled)")
+    print(f"[retro] Rounds: {len(rows)} total, {n_rejected} rejected")
+
+    # Verify seed hypotheses (features look at early msgs, label = session rejection)
+    hypotheses = [copy.copy(h) for h in SEED_HYPOTHESES]
+    print(f"\n[retro] Verifying {len(hypotheses)} seed hypotheses ...")
+    for h in hypotheses:
+        verify(h, rows)
+        status = "sig" if h.is_significant else "n/s"
+        print(f"  [{status}]  {h.id:35s}  p={h.p_value:.4f}  OR={h.odds_ratio:.2f}"
+              f"  n_pos={h.n_pos}  n_neg={h.n_neg}")
+
+    # LLM proposal + refinement
+    if not args.no_llm:
+        from src.hypoGen.generator.propose import propose_new, refine
+
+        for iteration in range(1, args.max_iter + 1):
+            print(f"\n[retro] Iteration {iteration} — proposing new hypotheses")
+            existing_ids = [h.id for h in hypotheses]
+            new_hyps = propose_new(
+                sample_rows=rows, n_fail=4, n_pass=4,
+                existing_ids=existing_ids,
+            )
+            for h in new_hyps:
+                verify(h, rows)
+                status = "sig" if h.is_significant else "n/s"
+                print(f"  [{status}]  {h.id:35s}  p={h.p_value:.4f}  OR={h.odds_ratio:.2f}")
+            hypotheses.extend(new_hyps)
+
+            weak = [h for h in hypotheses if not h.is_significant]
+            for h in weak:
+                refined = refine(h, rows)
+                if refined:
+                    verify(refined, rows)
+                    hypotheses.append(refined)
+
+    # Generate reports
+    print(report(hypotheses))
+    save_results_json(hypotheses, str(out_dir / "results.json"))
+    save_features_py(hypotheses, str(out_dir / "results_features.py"))
+    update_hypotheses_md(hypotheses, n_sessions=len(rows), label="rounds",
+                         md_path=str(out_dir / "HYPOTHESES.md"))
+    print(f"\n[retro] Outputs written to: {out_dir}/")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="retro",
@@ -221,6 +325,16 @@ def main() -> None:
     parser.add_argument("--foreground", action="store_true",
                         help="Run in foreground instead of forking (useful for debugging)")
 
+    # Hypothesis generation
+    parser.add_argument("--hypogen", action="store_true",
+                        help="Generate hypotheses about session patterns")
+    parser.add_argument("--no-llm", action="store_true",
+                        help="(hypogen) Skip LLM calls, seed hypotheses only")
+    parser.add_argument("--label-llm", action="store_true",
+                        help="(hypogen) Use LLM for session labeling")
+    parser.add_argument("--max-iter", type=int, default=2,
+                        help="(hypogen) LLM propose+refine cycles (default: 2)")
+
     args = parser.parse_args()
     working_dir = str(Path(args.dir).resolve())
 
@@ -232,7 +346,9 @@ def main() -> None:
     playbook_path = args.playbook or str(retro_dir / "playbook.txt")
     claude_md_path = args.claude_md or str(Path(working_dir) / "CLAUDE.md")
 
-    if args.up:
+    if args.hypogen:
+        run_hypogen(working_dir, retro_dir, args)
+    elif args.up:
         if args.foreground:
             run_daemon(working_dir, playbook_path, claude_md_path, cfg)
         else:

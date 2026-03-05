@@ -1,0 +1,514 @@
+[
+  {
+    "id": "edit_without_read",
+    "description": "[TOXIC] In this round, agent edits a file without having Read it first.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 24,
+    "n_neg": 38,
+    "pass_rate_pos": 0.9583,
+    "pass_rate_neg": 0.9737,
+    "p_value": 0.738965,
+    "odds_ratio": 0.6267,
+    "or_ci": [
+      0.0615,
+      6.3845
+    ]
+  },
+  {
+    "id": "edit_without_search",
+    "description": "[TOXIC] In this round, agent edits files without any Glob/Grep search.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 29,
+    "n_neg": 33,
+    "pass_rate_pos": 0.9655,
+    "pass_rate_neg": 0.9697,
+    "p_value": 0.92595,
+    "odds_ratio": 0.8769,
+    "or_ci": [
+      0.0863,
+      8.9093
+    ]
+  },
+  {
+    "id": "more_edits_than_reads",
+    "description": "[TOXIC] In this round, agent makes more edits than reads.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 21,
+    "n_neg": 41,
+    "pass_rate_pos": 0.9524,
+    "pass_rate_neg": 0.9756,
+    "p_value": 0.624184,
+    "odds_ratio": 0.5062,
+    "or_ci": [
+      0.0495,
+      5.1751
+    ]
+  },
+  {
+    "id": "bash_fails",
+    "description": "[TOXIC] In this round, a Bash command produced an error.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 4,
+    "n_neg": 58,
+    "pass_rate_pos": 0.75,
+    "pass_rate_neg": 0.9828,
+    "p_value": 0.010824,
+    "odds_ratio": 0.0609,
+    "or_ci": [
+      0.005,
+      0.747
+    ]
+  },
+  {
+    "id": "no_search_before_action",
+    "description": "[TOXIC] In this round, agent takes action (Edit/Bash) without any search.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 38,
+    "n_neg": 24,
+    "pass_rate_pos": 0.9737,
+    "pass_rate_neg": 0.9583,
+    "p_value": 0.738965,
+    "odds_ratio": 1.5957,
+    "or_ci": [
+      0.1566,
+      16.2576
+    ]
+  },
+  {
+    "id": "multiple_consecutive_edits",
+    "description": "If the agent performs multiple consecutive edits on the same file, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 5,
+    "n_neg": 57,
+    "pass_rate_pos": 0.8,
+    "pass_rate_neg": 0.9825,
+    "p_value": 0.026826,
+    "odds_ratio": 0.0796,
+    "or_ci": [
+      0.0068,
+      0.9308
+    ]
+  },
+  {
+    "id": "write_without_read",
+    "description": "If the agent writes to a file without reading it first, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 13,
+    "n_neg": 49,
+    "pass_rate_pos": 0.9231,
+    "pass_rate_neg": 0.9796,
+    "p_value": 0.305236,
+    "odds_ratio": 0.2577,
+    "or_ci": [
+      0.0247,
+      2.6945
+    ]
+  },
+  {
+    "id": "frequent_bash_commands",
+    "description": "If the agent executes a high number of Bash commands in a single round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 4,
+    "n_neg": 58,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9655,
+    "p_value": 0.70578,
+    "odds_ratio": 0.3982,
+    "or_ci": [
+      0.0165,
+      9.6201
+    ]
+  },
+  {
+    "id": "edit_without_read_v2",
+    "description": "In this round, the agent edits a file without having successfully Read it first.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 23,
+    "n_neg": 39,
+    "pass_rate_pos": 0.9565,
+    "pass_rate_neg": 0.9744,
+    "p_value": 0.70098,
+    "odds_ratio": 0.5844,
+    "or_ci": [
+      0.0573,
+      5.96
+    ]
+  },
+  {
+    "id": "edit_without_search_v2",
+    "description": "In this round, the agent performs file edits without any prior contextual Read operation on the same file.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 15,
+    "n_neg": 47,
+    "pass_rate_pos": 0.9333,
+    "pass_rate_neg": 0.9787,
+    "p_value": 0.386334,
+    "odds_ratio": 0.3118,
+    "or_ci": [
+      0.0301,
+      3.2331
+    ]
+  },
+  {
+    "id": "more_edits_than_reads_v2",
+    "description": "In this round, the agent makes multiple edits without any successful reads.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 0,
+    "n_neg": 62,
+    "pass_rate_pos": 0.0,
+    "pass_rate_neg": 0.9677,
+    "p_value": 1.0,
+    "odds_ratio": 0.0413,
+    "or_ci": [
+      0.0007,
+      2.5413
+    ]
+  },
+  {
+    "id": "no_search_before_action_v2",
+    "description": "In this round, the agent takes action (Edit/Bash) without any search and encounters an error.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 16,
+    "n_neg": 46,
+    "pass_rate_pos": 0.9375,
+    "pass_rate_neg": 0.9783,
+    "p_value": 0.426698,
+    "odds_ratio": 0.3407,
+    "or_ci": [
+      0.033,
+      3.5205
+    ]
+  },
+  {
+    "id": "write_without_read_v2",
+    "description": "If the agent writes to a file without first gathering sufficient context (e.g., reading related files or checking existing content), the user is more likely to reject it.",
+    "toxic": false,
+    "significant": false,
+    "n_pos": 4,
+    "n_neg": 58,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9655,
+    "p_value": 0.70578,
+    "odds_ratio": 0.3982,
+    "or_ci": [
+      0.0165,
+      9.6201
+    ]
+  },
+  {
+    "id": "frequent_bash_commands_v2",
+    "description": "If the agent executes multiple Bash commands that result in errors within a single round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 2,
+    "n_neg": 60,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9667,
+    "p_value": 0.792961,
+    "odds_ratio": 0.2137,
+    "or_ci": [
+      0.008,
+      5.734
+    ]
+  },
+  {
+    "id": "excessive_file_edits",
+    "description": "If the agent performs an excessive number of file edits in a single round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 11,
+    "n_neg": 51,
+    "pass_rate_pos": 0.9091,
+    "pass_rate_neg": 0.9804,
+    "p_value": 0.224785,
+    "odds_ratio": 0.2079,
+    "or_ci": [
+      0.0197,
+      2.1995
+    ]
+  },
+  {
+    "id": "frequent_bash_with_errors",
+    "description": "If the agent frequently uses Bash commands and encounters errors, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 2,
+    "n_neg": 60,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9667,
+    "p_value": 0.792961,
+    "odds_ratio": 0.2137,
+    "or_ci": [
+      0.008,
+      5.734
+    ]
+  },
+  {
+    "id": "repeated_edit_on_same_file",
+    "description": "If the agent repeatedly edits the same file multiple times in a round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 18,
+    "n_neg": 44,
+    "pass_rate_pos": 0.9444,
+    "pass_rate_neg": 0.9773,
+    "p_value": 0.506643,
+    "odds_ratio": 0.4023,
+    "or_ci": [
+      0.0391,
+      4.1357
+    ]
+  },
+  {
+    "id": "edit_without_read_v2",
+    "description": "In this round, the agent edits a file without having successfully Read it first.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 23,
+    "n_neg": 39,
+    "pass_rate_pos": 0.9565,
+    "pass_rate_neg": 0.9744,
+    "p_value": 0.70098,
+    "odds_ratio": 0.5844,
+    "or_ci": [
+      0.0573,
+      5.96
+    ]
+  },
+  {
+    "id": "edit_without_search_v2",
+    "description": "In this round, the agent performs file edits without any prior contextual Read operation on the same file.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 15,
+    "n_neg": 47,
+    "pass_rate_pos": 0.9333,
+    "pass_rate_neg": 0.9787,
+    "p_value": 0.386334,
+    "odds_ratio": 0.3118,
+    "or_ci": [
+      0.0301,
+      3.2331
+    ]
+  },
+  {
+    "id": "more_edits_than_reads_v2",
+    "description": "In this round, the agent makes multiple edits without any successful reads.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 0,
+    "n_neg": 62,
+    "pass_rate_pos": 0.0,
+    "pass_rate_neg": 0.9677,
+    "p_value": 1.0,
+    "odds_ratio": 0.0413,
+    "or_ci": [
+      0.0007,
+      2.5413
+    ]
+  },
+  {
+    "id": "no_search_before_action_v2",
+    "description": "In this round, the agent takes action (Edit/Bash) without any search and encounters an error.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 16,
+    "n_neg": 46,
+    "pass_rate_pos": 0.9375,
+    "pass_rate_neg": 0.9783,
+    "p_value": 0.426698,
+    "odds_ratio": 0.3407,
+    "or_ci": [
+      0.033,
+      3.5205
+    ]
+  },
+  {
+    "id": "write_without_read_v2",
+    "description": "If the agent writes to a file without sufficient context or understanding, the user is more likely to reject it.",
+    "toxic": false,
+    "significant": false,
+    "n_pos": 11,
+    "n_neg": 51,
+    "pass_rate_pos": 0.9091,
+    "pass_rate_neg": 0.9804,
+    "p_value": 0.224785,
+    "odds_ratio": 0.2079,
+    "or_ci": [
+      0.0197,
+      2.1995
+    ]
+  },
+  {
+    "id": "frequent_bash_commands_v2",
+    "description": "If the agent executes multiple Bash commands that result in errors within a single round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 2,
+    "n_neg": 60,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9667,
+    "p_value": 0.792961,
+    "odds_ratio": 0.2137,
+    "or_ci": [
+      0.008,
+      5.734
+    ]
+  },
+  {
+    "id": "edit_without_read_v2_v2",
+    "description": "In this round, the agent edits a file without having successfully Read it first, and there are no successful Write operations before the Edit.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 5,
+    "n_neg": 57,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9649,
+    "p_value": 0.67027,
+    "odds_ratio": 0.4955,
+    "or_ci": [
+      0.021,
+      11.6827
+    ]
+  },
+  {
+    "id": "edit_without_search_v2_v2",
+    "description": "In this round, the agent performs file edits without any prior contextual Read or Write operation on the same file.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 23,
+    "n_neg": 39,
+    "pass_rate_pos": 0.9565,
+    "pass_rate_neg": 0.9744,
+    "p_value": 0.70098,
+    "odds_ratio": 0.5844,
+    "or_ci": [
+      0.0573,
+      5.96
+    ]
+  },
+  {
+    "id": "more_edits_than_reads_v2_v2",
+    "description": "In this round, the agent makes multiple edits without any successful reads or context-establishing actions.",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 3,
+    "n_neg": 59,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9661,
+    "p_value": 0.745811,
+    "odds_ratio": 0.3043,
+    "or_ci": [
+      0.0121,
+      7.636
+    ]
+  },
+  {
+    "id": "no_search_before_action_v2_v2",
+    "description": "In this round, the agent takes action (Edit/Bash) without any search and encounters a critical error (e.g., command not found, file not found).",
+    "toxic": true,
+    "significant": false,
+    "n_pos": 2,
+    "n_neg": 60,
+    "pass_rate_pos": 1.0,
+    "pass_rate_neg": 0.9667,
+    "p_value": 0.792961,
+    "odds_ratio": 0.2137,
+    "or_ci": [
+      0.008,
+      5.734
+    ]
+  },
+  {
+    "id": "write_without_read_v2_v2",
+    "description": "If the agent writes to a file without first successfully reading any related files or checking existing content, the user is more likely to reject it.",
+    "toxic": false,
+    "significant": false,
+    "n_pos": 0,
+    "n_neg": 62,
+    "pass_rate_pos": 0.0,
+    "pass_rate_neg": 0.9677,
+    "p_value": 1.0,
+    "odds_ratio": 0.0413,
+    "or_ci": [
+      0.0007,
+      2.5413
+    ]
+  },
+  {
+    "id": "frequent_bash_commands_v2_v2",
+    "description": "If the agent executes multiple Bash commands that result in errors, and the errors are not addressed or resolved within the same round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 2,
+    "n_neg": 60,
+    "pass_rate_pos": 0.5,
+    "pass_rate_neg": 0.9833,
+    "p_value": 0.000141,
+    "odds_ratio": 0.0252,
+    "or_ci": [
+      0.0016,
+      0.4078
+    ]
+  },
+  {
+    "id": "excessive_file_edits_v2",
+    "description": "If the agent performs multiple redundant file edits in a single round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 6,
+    "n_neg": 56,
+    "pass_rate_pos": 0.8333,
+    "pass_rate_neg": 0.9821,
+    "p_value": 0.049917,
+    "odds_ratio": 0.0991,
+    "or_ci": [
+      0.0088,
+      1.1222
+    ]
+  },
+  {
+    "id": "frequent_bash_with_errors_v2",
+    "description": "If the agent frequently uses Bash commands and encounters errors without resolving them, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 3,
+    "n_neg": 59,
+    "pass_rate_pos": 0.6667,
+    "pass_rate_neg": 0.9831,
+    "p_value": 0.002482,
+    "odds_ratio": 0.0427,
+    "or_ci": [
+      0.0032,
+      0.5714
+    ]
+  },
+  {
+    "id": "repeated_edit_on_same_file_v2",
+    "description": "If the agent performs excessive repeated edits on the same file within a round, the user is more likely to reject it.",
+    "toxic": true,
+    "significant": true,
+    "n_pos": 6,
+    "n_neg": 56,
+    "pass_rate_pos": 0.8333,
+    "pass_rate_neg": 0.9821,
+    "p_value": 0.049917,
+    "odds_ratio": 0.0991,
+    "or_ci": [
+      0.0088,
+      1.1222
+    ]
+  }
+]
