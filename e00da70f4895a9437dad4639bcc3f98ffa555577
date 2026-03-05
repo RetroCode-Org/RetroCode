@@ -1,0 +1,49 @@
+src/hypoGen/generator/hypothesis.py
+  51e1ce9277b389be 1-127
+src/hypoGen/existing_hypothesis/seed_features.py
+  51e1ce9277b389be 1-70
+src/hypoGen/generator/propose.py
+  51e1ce9277b389be 1-309
+src/hypoGen/verifier/__init__.py
+  51e1ce9277b389be 1
+src/hypoGen/__init__.py
+  51e1ce9277b389be 1
+src/main.py
+  51e1ce9277b389be 208-311,328-337,349-351
+src/hypoGen/verifier/verify.py
+  51e1ce9277b389be 1-93
+src/hypoGen/run_pipeline.py
+  51e1ce9277b389be 1-200
+src/hypoGen/existing_hypothesis/__init__.py
+  51e1ce9277b389be 1
+src/hypoGen/trace_parser.py
+  51e1ce9277b389be 1-197
+src/hypoGen/analyzer/report.py
+  51e1ce9277b389be 1-133
+src/hypoGen/labeler.py
+  51e1ce9277b389be 1-88
+src/hypoGen/analyzer/__init__.py
+  51e1ce9277b389be 1
+src/hypoGen/generator/__init__.py
+  51e1ce9277b389be 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.7",
+  "base_commit_sha": "e00da70f4895a9437dad4639bcc3f98ffa555577",
+  "prompts": {
+    "51e1ce9277b389be": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ff0932b0-2faa-46b3-8f38-0a1c4a492786",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 2144,
+      "total_deletions": 806,
+      "accepted_lines": 1339,
+      "overriden_lines": 0
+    }
+  }
+}
