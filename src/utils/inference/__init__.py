@@ -19,6 +19,7 @@ from ._anthropic import AnthropicProvider
 from ._openai import OpenAIProvider
 from ._openrouter import OpenRouterProvider
 from ._commonstack import CommonStackProvider
+from ._gemini import GeminiProvider
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ _PROVIDERS = {
     "openai": OpenAIProvider,
     "openrouter": OpenRouterProvider,
     "commonstack": CommonStackProvider,
+    "gemini": GeminiProvider,
 }
 
 _default_provider: Optional[BaseProvider] = None
@@ -36,8 +38,8 @@ def get_provider(name: Optional[str] = None, api_key: Optional[str] = None) -> B
     """Instantiate a provider by name.
 
     Args:
-        name: One of 'anthropic', 'openai', 'openrouter'.
-              Falls back to LLM_PROVIDER env var, then 'anthropic'.
+        name: One of 'anthropic', 'openai', 'openrouter', 'gemini', 'commonstack'.
+              Falls back to LLM_PROVIDER env var, then 'commonstack'.
         api_key: Optional API key override (otherwise reads from env).
     """
     name = name or os.environ.get("LLM_PROVIDER", "commonstack")
@@ -104,4 +106,5 @@ __all__ = [
     "AnthropicProvider",
     "OpenAIProvider",
     "OpenRouterProvider",
+    "GeminiProvider",
 ]

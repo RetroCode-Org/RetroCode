@@ -15,8 +15,12 @@ git clone <repo-url>
 cd RetroCode
 pip install -e .
 
-# 2. Set your API key
-export COMMONSTACK_API_KEY=your_key_here
+# 2. Set your API key (pick one)
+export COMMONSTACK_API_KEY=your_key_here   # default — free credits for members
+# export OPENAI_API_KEY=your_key_here      # or use OpenAI  (LLM_PROVIDER=openai)
+# export ANTHROPIC_API_KEY=your_key_here   # or Anthropic   (LLM_PROVIDER=anthropic)
+# export GEMINI_API_KEY=your_key_here      # or Gemini      (LLM_PROVIDER=gemini)
+# export OPENROUTER_API_KEY=your_key_here  # or OpenRouter  (LLM_PROVIDER=openrouter)
 
 # 3. Go to your project and start the daemon
 cd ~/my-project
@@ -96,15 +100,37 @@ If no `retro_config.yaml` is present, built-in defaults are used.
 
 ## LLM providers
 
-The default provider is **CommonStack**. Set `COMMONSTACK_API_KEY` in your environment and you're done — no extra config needed.
+RetroCode uses **CommonStack** by default. CommonStack provides free credits for RetroCode users registered through this link: <TBD>.
 
-To switch providers, set `LLM_PROVIDER`:
+If you prefer to use your own API key from another provider, set `LLM_PROVIDER` before running:
+
+```bash
+# OpenAI
+export LLM_PROVIDER=openai
+export OPENAI_API_KEY=your_key_here
+
+# Anthropic
+export LLM_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=your_key_here
+
+# Gemini
+export LLM_PROVIDER=gemini
+export GEMINI_API_KEY=your_key_here
+
+# OpenRouter (for other models)
+export LLM_PROVIDER=openrouter
+export OPENROUTER_API_KEY=your_key_here
+
+# CommonStack (default — free credits available)
+export COMMONSTACK_API_KEY=your_key_here
+```
 
 | Provider | `LLM_PROVIDER` | Key env var |
 |---|---|---|
-| CommonStack *(default)* | `commonstack` | `COMMONSTACK_API_KEY`, `COMMONSTACK_API_URL` *(optional)* |
+| CommonStack *(default, free credits)* | `commonstack` | `COMMONSTACK_API_KEY`, `COMMONSTACK_API_URL` *(optional)* |
 | OpenAI | `openai` | `OPENAI_API_KEY` |
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+| Gemini | `gemini` | `GEMINI_API_KEY` |
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
 
 The default model is `gpt-5.2`. Override it in `retro_config.yaml` under `playbook.default_model`.
