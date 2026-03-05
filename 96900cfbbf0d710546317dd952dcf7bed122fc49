@@ -1,0 +1,31 @@
+src/utils/modification/agents_md.py
+  51e1ce9277b389be 1-20
+retro_config.yaml
+  51e1ce9277b389be 17-37
+src/utils/ingestion/codex_reader.py
+  51e1ce9277b389be 1-179
+src/utils/modification/cursor_rules.py
+  51e1ce9277b389be 1-46
+src/utils/ingestion/cursor_reader.py
+  51e1ce9277b389be 1-93,101-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "96900cfbbf0d710546317dd952dcf7bed122fc49",
+  "prompts": {
+    "51e1ce9277b389be": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ff0932b0-2faa-46b3-8f38-0a1c4a492786",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 438,
+      "total_deletions": 0,
+      "accepted_lines": 436,
+      "overriden_lines": 3
+    }
+  }
+}
