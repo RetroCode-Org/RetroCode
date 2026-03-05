@@ -15,6 +15,24 @@ import yaml
 
 CONFIG_FILENAME = "retro_config.yaml"
 
+# ---------------------------------------------------------------------------
+# Compatibility matrix defaults
+# ---------------------------------------------------------------------------
+# inputs:  which agent trace sources to ingest
+# outputs: which agent rule files to update
+#
+# | input source | trace location                                   |
+# |--------------|--------------------------------------------------|
+# | claude-code  | ~/.claude/projects/<key>/*.jsonl                 |
+# | cursor       | ~/.cursor/projects/<key>/agent-transcripts/*/*.jsonl |
+# | codex        | ~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-*.jsonl (filtered by cwd) |
+#
+# | output target | file written                                    |
+# |---------------|------------------------------------------------|
+# | claude-code   | CLAUDE.md  (between retro markers)             |
+# | cursor        | .cursor/rules/retro.mdc  (alwaysApply: true)   |
+# | codex         | AGENTS.md  (between retro markers)             |
+
 _DEFAULTS = {
     "daemon": {
         "poll_interval": 30,
@@ -34,6 +52,10 @@ _DEFAULTS = {
             "OTHERS": "other",
         },
     },
+    "sources": {
+        "inputs":  ["claude-code", "cursor", "codex"],
+        "outputs": ["claude-code"],
+    },
 }
 
 
@@ -48,6 +70,9 @@ class RetroConfig:
     max_bullets: int
     default_model: str
     section_prefixes: dict[str, str]
+    # Compatibility matrix
+    inputs: list[str]   # which trace sources to ingest
+    outputs: list[str]  # which agent rule files to update
 
 
 def load_config(working_dir: str | Path) -> RetroConfig:
@@ -55,6 +80,7 @@ def load_config(working_dir: str | Path) -> RetroConfig:
     cfg = _deep_merge(_DEFAULTS, _load_yaml(working_dir))
     d = cfg["daemon"]
     p = cfg["playbook"]
+    s = cfg["sources"]
     return RetroConfig(
         poll_interval=d["poll_interval"],
         min_rounds=d["min_rounds"],
@@ -63,6 +89,8 @@ def load_config(working_dir: str | Path) -> RetroConfig:
         max_bullets=p["max_bullets"],
         default_model=p["default_model"],
         section_prefixes=p["sections"],
+        inputs=s["inputs"],
+        outputs=s["outputs"],
     )
 
 

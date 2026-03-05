@@ -14,3 +14,24 @@ playbook:
     COMMON_MISTAKES: mistake
     TOOL_USAGE: tool
     OTHERS: other
+
+# ---------------------------------------------------------------------------
+# Compatibility matrix
+#
+# inputs:  which agent trace sources to ingest
+#   - claude-code  ~/.claude/projects/<key>/*.jsonl
+#   - cursor       ~/.cursor/projects/<key>/agent-transcripts/*/*.jsonl
+#   - codex        ~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-*.jsonl (filtered by cwd)
+#
+# outputs: which agent rule files to update
+#   - claude-code  CLAUDE.md                (between retro markers)
+#   - cursor       .cursor/rules/retro.mdc  (alwaysApply: true)
+#   - codex        AGENTS.md                (between retro markers)
+# ---------------------------------------------------------------------------
+sources:
+  inputs:
+    - claude-code
+    - cursor
+    - codex
+  outputs:
+    - claude-code

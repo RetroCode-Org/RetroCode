@@ -195,3 +195,40 @@ def _parse_user_content(
                 raw = "\n".join(parts)
             tool_results.append((tool_name, str(raw)))
     return text_parts, tool_results
+
+
+def parse_rounds_from_messages(session_id: str, messages: list[dict]) -> list[dict]:
+    """Split a pre-parsed message list into rounds.
+
+    Works with output from any reader's parse_session() (ClaudeReader,
+    CursorReader, etc.), which returns flat {role, content} dicts.
+
+    A round = one user message + all subsequent non-user messages until
+    the next user message.
+    """
+    user_indices = [i for i, m in enumerate(messages) if m["role"] == "user"]
+
+    rounds: list[dict] = []
+    for round_num, start in enumerate(user_indices):
+        user_msg = messages[start]["content"]
+
+        end = user_indices[round_num + 1] if round_num + 1 < len(user_indices) else len(messages)
+        round_msgs = messages[start + 1 : end]
+
+        next_user_msg = (
+            messages[user_indices[round_num + 1]]["content"]
+            if round_num + 1 < len(user_indices)
+            else None
+        )
+
+        rounds.append({
+            "session_id": session_id,
+            "round_id": f"{session_id}:{round_num}",
+            "round_num": round_num,
+            "user_msg": user_msg,
+            "msgs": round_msgs,
+            "next_user_msg": next_user_msg,
+            "n_msgs": len(round_msgs),
+        })
+
+    return rounds

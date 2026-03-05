@@ -100,7 +100,7 @@ If no `retro_config.yaml` is present, built-in defaults are used.
 
 ## LLM providers
 
-RetroCode uses **CommonStack** by default. CommonStack provides free credits for RetroCode users registered through this link: <TBD>.
+RetroCode uses **CommonStack** by default. CommonStack provides free credits for RetroCode users registered through this link: \<TBD\>.
 
 If you prefer to use your own API key from another provider, set `LLM_PROVIDER` before running:
 
@@ -134,6 +134,46 @@ export COMMONSTACK_API_KEY=your_key_here
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
 
 The default model is `gpt-5.2`. Override it in `retro_config.yaml` under `playbook.default_model`.
+
+---
+
+---
+
+## Source compatibility matrix
+
+Configure which trace sources to ingest and which agent rule files to update
+via `retro_config.yaml`:
+
+```yaml
+sources:
+  inputs:  ["claude-code", "cursor", "codex"]   # which sessions to read
+  outputs: ["claude-code", "cursor", "codex"]   # which rule files to update
+```
+
+### Inputs
+
+| Source | `inputs` value | Trace location |
+|---|---|---|
+| Claude Code | `claude-code` | `~/.claude/projects/<key>/*.jsonl` |
+| Cursor | `cursor` | `~/.cursor/projects/<key>/agent-transcripts/*/*.jsonl` |
+| OpenAI Codex CLI | `codex` | `~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-*.jsonl` (filtered by `cwd`) |
+
+### Outputs
+
+| Target | `outputs` value | File written | Format |
+|---|---|---|---|
+| Claude Code | `claude-code` | `CLAUDE.md` | Markdown between `<!-- retro:start/end -->` markers |
+| Cursor | `cursor` | `.cursor/rules/retro.mdc` | MDC with `alwaysApply: true` frontmatter |
+| OpenAI Codex CLI | `codex` | `AGENTS.md` | Markdown between `<!-- retro:start/end -->` markers |
+
+**Default**: all three sources as inputs, only `claude-code` as output.
+To write to all agents simultaneously:
+
+```yaml
+sources:
+  inputs:  ["claude-code", "cursor", "codex"]
+  outputs: ["claude-code", "cursor", "codex"]
+```
 
 ---
 

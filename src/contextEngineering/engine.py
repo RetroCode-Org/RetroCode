@@ -7,9 +7,16 @@ from .config import DEFAULT_MODEL, MAX_PLAYBOOK_BULLETS
 from .reflector import Reflector
 from .curator import Curator, load_playbook, save_playbook
 from .trace_ingester import Conversation
-from src.utils.modification import ClaudeMdWriter
+from src.utils.modification import ClaudeMdWriter, CursorRulesWriter, AgentsMdWriter
+from src.utils.modification.base import BaseMarkdownWriter
 
 logger = logging.getLogger(__name__)
+
+_WRITER_REGISTRY: dict[str, type[BaseMarkdownWriter]] = {
+    "claude-code": ClaudeMdWriter,
+    "cursor":      CursorRulesWriter,
+    "codex":       AgentsMdWriter,
+}
 
 
 class ContextEngine:
@@ -25,9 +32,14 @@ class ContextEngine:
         model: str = DEFAULT_MODEL,
         claude_md_path: Optional[str] = None,
         max_bullets: int = MAX_PLAYBOOK_BULLETS,
+        writers: Optional[list[BaseMarkdownWriter]] = None,
     ):
         self.playbook_path = playbook_path
         self.claude_md_path = claude_md_path
+        self.writers: list[BaseMarkdownWriter] = writers or []
+        # Legacy: if claude_md_path given but no writers, default to CLAUDE.md only
+        if not self.writers and claude_md_path:
+            self.writers = [ClaudeMdWriter(claude_md_path)]
         self.reflector = Reflector(model=model)
         self.curator = Curator(model=model, max_bullets=max_bullets)
 
@@ -70,9 +82,9 @@ class ContextEngine:
         save_playbook(self.playbook_path, updated_playbook)
         logger.info(f"Playbook updated: +{added} added, -{deleted} deleted")
 
-        # Step 4: Sync to CLAUDE.md if configured
-        if self.claude_md_path:
-            ClaudeMdWriter(self.claude_md_path).write(updated_playbook)
-            logger.info(f"CLAUDE.md updated: {self.claude_md_path}")
+        # Step 4: Sync to all configured output targets
+        for writer in self.writers:
+            writer.write(updated_playbook)
+            logger.info(f"{writer.agent_name} rules updated: {writer.path}")
 
         return updated_playbook

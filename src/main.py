@@ -27,7 +27,7 @@ from pathlib import Path
 # Allow running from the repo root without installing the package.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.utils.ingestion import ClaudeReader
+from src.utils.ingestion import ClaudeReader, CursorReader, CodexReader
 from src.contextEngineering.trace_ingester import (
     Conversation,
     TraceState,
@@ -37,6 +37,27 @@ from src.contextEngineering.engine import ContextEngine
 from src.retro_config import load_config, RetroConfig
 
 logger = logging.getLogger(__name__)
+
+
+def _build_readers(cfg_inputs: list[str]):
+    """Instantiate readers for the configured input sources."""
+    all_readers = {
+        "claude-code": ClaudeReader,
+        "cursor":      CursorReader,
+        "codex":       CodexReader,
+    }
+    return [all_readers[name]() for name in cfg_inputs if name in all_readers]
+
+
+def _build_writers(cfg_outputs: list[str], working_dir: str, claude_md_path: str):
+    """Instantiate writers for the configured output targets."""
+    from src.utils.modification import ClaudeMdWriter, CursorRulesWriter, AgentsMdWriter
+    all_writers = {
+        "claude-code": lambda: ClaudeMdWriter(claude_md_path),
+        "cursor":      lambda: CursorRulesWriter(working_dir),
+        "codex":       lambda: AgentsMdWriter(working_dir),
+    }
+    return [all_writers[name]() for name in cfg_outputs if name in all_writers]
 
 
 def setup_logging(working_dir: str, retro_dir: str) -> None:
@@ -66,22 +87,25 @@ def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: R
     retro_dir = str(Path(working_dir) / cfg.retro_dir)
     setup_logging(working_dir, retro_dir)
 
-    reader = ClaudeReader()
+    readers = _build_readers(cfg.inputs)
+    writers = _build_writers(cfg.outputs, working_dir, claude_md_path)
     engine = ContextEngine(
         playbook_path=playbook_path,
         model=cfg.default_model,
-        claude_md_path=claude_md_path or None,
         max_bullets=cfg.max_bullets,
+        writers=writers,
     )
     state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
     state = TraceState.load(state_path)
 
     logger.info(f"[retro] daemon watching: {working_dir}")
+    logger.info(f"[retro] inputs:  {cfg.inputs}")
+    logger.info(f"[retro] outputs: {cfg.outputs}")
     logger.info(f"[retro] playbook output: {playbook_path}")
 
     while True:
         try:
-            _poll(working_dir, reader, engine, state, state_path, cfg.min_rounds)
+            _poll(working_dir, readers, engine, state, state_path, cfg.min_rounds)
         except Exception as e:
             logger.error(f"Poll error: {e}", exc_info=True)
         time.sleep(cfg.poll_interval)
@@ -89,24 +113,25 @@ def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: R
 
 def _poll(
     working_dir: str,
-    reader: ClaudeReader,
+    readers: list,
     engine: ContextEngine,
     state: TraceState,
     state_path: str,
     min_rounds: int,
 ) -> None:
-    trace_files = reader.find_trace_files(working_dir)
-    if not trace_files:
-        return
-
     processed = set(state.processed_session_ids)
     new_conversations: list[Conversation] = []
 
-    for tf in trace_files:
-        if tf.stem in processed:
-            continue
-        try:
-            data = reader.parse_session(tf)
+    source_counts: dict[str, int] = {}
+    for reader in readers:
+        for tf in reader.find_trace_files(working_dir):
+            try:
+                data = reader.parse_session(tf)
+            except Exception as e:
+                logger.warning(f"Failed to parse {tf.name}: {e}")
+                continue
+            if data["session_id"] in processed:
+                continue
             conv = Conversation(
                 session_id=data["session_id"],
                 timestamp=data["timestamp"],
@@ -114,14 +139,14 @@ def _poll(
             )
             if conv.rounds > 0:
                 new_conversations.append(conv)
-        except Exception as e:
-            logger.warning(f"Failed to parse {tf.name}: {e}")
+                source_counts[reader.tool_name] = source_counts.get(reader.tool_name, 0) + 1
 
     new_round_count = sum(c.rounds for c in new_conversations)
     if new_round_count == 0:
         return
 
-    logger.info(f"Found {len(new_conversations)} new sessions, {new_round_count} rounds")
+    source_str = "  ".join(f"{k}:{v}" for k, v in source_counts.items())
+    logger.info(f"Found {len(new_conversations)} new sessions [{source_str}], {new_round_count} rounds")
 
     if new_round_count < min_rounds:
         logger.info(f"Only {new_round_count} new rounds (< {min_rounds}), waiting for more")
@@ -208,7 +233,7 @@ def stop_daemon(working_dir: str, pid_file: str) -> None:
 def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
     """Run the round-level hypothesis generation pipeline."""
     import copy
-    from src.hypoGen.trace_parser import parse_rounds
+    from src.hypoGen.trace_parser import parse_rounds, parse_rounds_from_messages
     from src.hypoGen.labeler import label_round, LabelStore
     from src.hypoGen.existing_hypothesis.seed_features import SEED_HYPOTHESES
     from src.hypoGen.verifier.verify import verify, report
@@ -219,25 +244,30 @@ def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
     out_dir = retro_dir / "hypoGen"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    reader = ClaudeReader()
-    trace_files = reader.find_trace_files(working_dir)
-    if not trace_files:
+    readers = [ClaudeReader(), CursorReader(), CodexReader()]
+    all_trace_files = []
+    for reader in readers:
+        all_trace_files.extend(reader.find_trace_files(working_dir))
+    if not all_trace_files:
         print(f"[retro] No trace files found for: {working_dir}")
-        print(f"  (looked in: {reader._project_dir(working_dir)})")
         return
 
-    print(f"[retro] Found {len(trace_files)} session traces")
+    print(f"[retro] Found {len(all_trace_files)} session traces")
 
-    # Parse sessions into rounds
+    # Parse sessions into rounds via each reader
     all_rounds: list[dict] = []
-    for fp in trace_files:
-        all_rounds.extend(parse_rounds(fp))
+    for reader in readers:
+        for fp in reader.find_trace_files(working_dir):
+            data = reader.parse_session(fp)
+            all_rounds.extend(
+                parse_rounds_from_messages(data["session_id"], data["messages"])
+            )
 
     if not all_rounds:
         print("[retro] No rounds found.")
         return
 
-    print(f"[retro] Parsed {len(all_rounds)} rounds across {len(trace_files)} sessions")
+    print(f"[retro] Parsed {len(all_rounds)} rounds across {len(all_trace_files)} sessions")
 
     # Label rounds (only explicit user rejections count)
     store = LabelStore(str(out_dir / "labeled_traces.json"))
@@ -309,6 +339,64 @@ def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
     print(f"\n[retro] Outputs written to: {out_dir}/")
 
 
+
+def run_offline(working_dir: str, playbook_path: str, claude_md_path: str, cfg: RetroConfig) -> None:
+    """Run one playbook update pass using all available sessions, then exit."""
+    retro_dir = str(Path(working_dir) / cfg.retro_dir)
+    setup_logging(working_dir, retro_dir)
+
+    readers = _build_readers(cfg.inputs)
+    writers = _build_writers(cfg.outputs, working_dir, claude_md_path)
+    engine = ContextEngine(
+        playbook_path=playbook_path,
+        model=cfg.default_model,
+        max_bullets=cfg.max_bullets,
+        writers=writers,
+    )
+    state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
+    state = TraceState.load(state_path)
+
+    processed = set(state.processed_session_ids)
+    new_conversations: list[Conversation] = []
+    source_counts: dict[str, int] = {}
+
+    for reader in readers:
+        for tf in reader.find_trace_files(working_dir):
+            try:
+                data = reader.parse_session(tf)
+            except Exception as e:
+                logger.warning(f"Failed to parse {tf.name}: {e}")
+                continue
+            if data["session_id"] in processed:
+                continue
+            conv = Conversation(
+                session_id=data["session_id"],
+                timestamp=data["timestamp"],
+                messages=data["messages"],
+            )
+            if conv.rounds > 0:
+                new_conversations.append(conv)
+                source_counts[reader.tool_name] = source_counts.get(reader.tool_name, 0) + 1
+
+    if not new_conversations:
+        print("[retro] No new sessions found.")
+        return
+
+    new_round_count = sum(c.rounds for c in new_conversations)
+    source_str = "  ".join(f"{k}:{v}" for k, v in source_counts.items())
+    print(f"[retro] {len(new_conversations)} new sessions [{source_str}], {new_round_count} rounds")
+
+    engine.run(new_conversations)
+
+    now = datetime.now(timezone.utc).isoformat()
+    state.processed_session_ids.extend(c.session_id for c in new_conversations)
+    state.last_run_timestamp = now
+    state.save(state_path)
+    print(f"[retro] Playbook updated -> {playbook_path}")
+    for w in writers:
+        print(f"[retro] {w.agent_name} rules updated -> {w.path}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="retro",
@@ -324,6 +412,8 @@ def main() -> None:
                         help="CLAUDE.md to sync playbook into (default: <dir>/CLAUDE.md)")
     parser.add_argument("--foreground", action="store_true",
                         help="Run in foreground instead of forking (useful for debugging)")
+    parser.add_argument("--offline", action="store_true",
+                        help="Run one update pass using all new sessions, then exit")
 
     # Hypothesis generation
     parser.add_argument("--hypogen", action="store_true",
@@ -348,6 +438,8 @@ def main() -> None:
 
     if args.hypogen:
         run_hypogen(working_dir, retro_dir, args)
+    elif args.offline:
+        run_offline(working_dir, playbook_path, claude_md_path, cfg)
     elif args.up:
         if args.foreground:
             run_daemon(working_dir, playbook_path, claude_md_path, cfg)
