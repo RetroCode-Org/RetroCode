@@ -1,0 +1,23 @@
+README.md
+  51e1ce9277b389be 3,5,24,26,29,35-38,57-60,63,66,68-70,77,96-105,108-112,114,119-134,140,173,184-186,194,213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "3f710afdea1765778cf827a8ab8950011010d09a",
+  "prompts": {
+    "51e1ce9277b389be": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ff0932b0-2faa-46b3-8f38-0a1c4a492786",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 68,
+      "total_deletions": 69,
+      "accepted_lines": 59,
+      "overriden_lines": 0
+    }
+  }
+}
