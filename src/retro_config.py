@@ -43,6 +43,7 @@ _DEFAULTS = {
     "playbook": {
         "max_bullets": 40,
         "default_model": "gpt-5.2",
+        "batch_size": 4,
         "sections": {
             "CODING_PATTERNS": "coding",
             "WORKFLOW_STRATEGIES": "workflow",
@@ -69,6 +70,7 @@ class RetroConfig:
     # Playbook
     max_bullets: int
     default_model: str
+    batch_size: int
     section_prefixes: dict[str, str]
     # Compatibility matrix
     inputs: list[str]   # which trace sources to ingest
@@ -88,6 +90,7 @@ def load_config(working_dir: str | Path) -> RetroConfig:
         retro_dir=d["retro_dir"],
         max_bullets=p["max_bullets"],
         default_model=p["default_model"],
+        batch_size=p["batch_size"],
         section_prefixes=p["sections"],
         inputs=s["inputs"],
         outputs=s["outputs"],

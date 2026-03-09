@@ -1,8 +1,46 @@
 ![RetroCode](assets/imgs/retro_wide.png)
 
-Turn your AI coding agent sessions into an auto-updating project playbook.
+A plugin for AI coding agents (Claude Code, Cursor, Codex) that adds capabilities current providers don't offer. RetroCode reads your agent session traces and turns them into actionable improvements — automatically.
 
-RetroCode watches conversation traces from Claude Code, Cursor, and Codex, extracts patterns and insights using an LLM, and writes them directly into your project's agent rule files (`CLAUDE.md`, `.cursor/rules/retro.mdc`, `AGENTS.md`) so every future session benefits automatically.
+**What you get:**
+- **Playbook Generation** — Automatically builds and maintains project-specific rules from your past sessions, written directly into your agent's rule files
+- **Hypothesis Generation** — Statistically identifies which agent behaviors predict user rejection, with community sharing
+- **AI Code Blast Radius** - Automatically estimates the blast radius of a code edit by identifying how many execution paths and subsystems depend on the modified code.
+
+Works with Claude Code, Cursor, and Codex. Supports OpenAI, Anthropic, Gemini, and CommonStack as LLM providers.
+
+> **Full reference:** [docs/reference.md](docs/reference.md)
+
+---
+
+## Playbook Generation
+
+Automatically builds and maintains a project-specific playbook of coding patterns, workflow strategies, and common mistakes learned from your past sessions. The playbook is written directly into your agent's rule files (`CLAUDE.md`, `.cursor/rules/retro.mdc`, `AGENTS.md`) so every future session benefits.
+
+**How it works:**
+1. Reads session traces from Claude Code, Cursor, and/or Codex
+2. A **Reflector** analyzes each conversation individually for patterns, mistakes, and strategies (parallelized in batches)
+3. A **Curator** takes all reflections together, identifies cross-session patterns, and adds/modifies/removes bullets in a structured playbook
+4. The playbook is synced into configured output files between `<!-- retro:start/end -->` markers
+
+```bash
+retro --offline --dir .       # run once, update rule files, exit
+retro --up --dir .            # run in background, polling continuously
+retro --down --dir .          # stop the background daemon
+```
+
+## Hypothesis Generation
+
+Statistically identifies patterns in your sessions that predict explicit user rejection ("No, that's wrong", "undo this"). Useful for understanding what mistakes your AI agent keeps making and sharing discoveries with the community.
+
+```bash
+retro --hypogen --dir .       # find patterns in your sessions
+retro --submit --dir .        # submit discoveries to the shared collection
+retro --pull --dir .          # verify community hypotheses against your traces
+retro --contribute --dir .    # contribute your verification stats back
+```
+
+Results are written to `.retro/hypoGen/HYPOTHESES.md`. Significant hypotheses can be submitted to [swe-hypotheses](https://github.com/RetroCode-Org/swe-hypotheses) via `retro --submit`. Use `retro --pull` to see how community-discovered patterns hold up against your own data, and `retro --contribute` to add your stats to the shared evidence base.
 
 ---
 
@@ -16,198 +54,52 @@ pip install -e .
 
 # 2. Set your API key (pick one)
 export COMMONSTACK_API_KEY=your_key_here   # default — free credits for members
-# export OPENAI_API_KEY=your_key_here      # or use OpenAI  (LLM_PROVIDER=openai)
-# export ANTHROPIC_API_KEY=your_key_here   # or Anthropic   (LLM_PROVIDER=anthropic)
-# export GEMINI_API_KEY=your_key_here      # or Gemini      (LLM_PROVIDER=gemini)
-# export OPENROUTER_API_KEY=your_key_here  # or OpenRouter  (LLM_PROVIDER=openrouter)
+# export OPENAI_API_KEY=your_key_here      # or OpenAI   (LLM_PROVIDER=openai)
+# export ANTHROPIC_API_KEY=your_key_here   # or Anthropic (LLM_PROVIDER=anthropic)
+# export GEMINI_API_KEY=your_key_here      # or Gemini    (LLM_PROVIDER=gemini)
 
-# 3. Go to your project and run once
+# 3. Go to your project and run
 cd ~/my-project
 retro --offline --dir .
 ```
 
-That's it. RetroCode will read all new sessions from your configured agent tools, update the playbook, and write it into your rule files.
-
 ---
 
-## How it works
+## Supported agents
 
-1. RetroCode reads session traces from Claude Code, Cursor, and/or Codex
-2. A **Reflector** agent analyzes new conversations for patterns, mistakes, and strategies
-3. A **Curator** agent adds, modifies, or removes bullets in a structured playbook
-4. The playbook is synced into your configured output files between `<!-- retro:start -->` / `<!-- retro:end -->` markers
+Configure which traces to read and which rule files to update in `retro_config.yaml`:
 
----
-
-## Installation
-
-```bash
-git clone <repo-url>
-cd RetroCode
-pip install -e .
+```yaml
+sources:
+  inputs:  [claude-code, cursor, codex]   # default: all three
+  outputs: [claude-code]                  # default: CLAUDE.md only
 ```
 
-Requires Python 3.11+.
-
----
-
-## Usage
-
-```bash
-# Run once — process all new sessions and update rule files, then exit
-retro --offline --dir .
-
-# Start a background daemon that polls continuously
-retro --up --dir .
-
-# Start daemon in foreground (useful for debugging)
-retro --up --foreground --dir .
-
-# Stop the daemon
-retro --down --dir .
-
-# Generate hypotheses about what causes rejections in your sessions
-retro --hypogen --dir .
-```
+| | Claude Code | Cursor | Codex |
+|---|---|---|---|
+| **Input** (traces) | `~/.claude/projects/` | `~/.cursor/projects/` | `~/.codex/sessions/` |
+| **Output** (rules) | `CLAUDE.md` | `.cursor/rules/retro.mdc` | `AGENTS.md` |
 
 ---
 
 ## Configuration
 
-Drop a `retro_config.yaml` in your project root. See the project root for a full example. Key options:
+Drop a `retro_config.yaml` in your project root. See the root `retro_config.yaml` for a full example with comments.
 
-```yaml
-daemon:
-  poll_interval: 30       # seconds between polling cycles
-  min_rounds: 5           # minimum new conversation rounds before triggering update
-  pid_file: .retro.pid
-  retro_dir: .retro
+Key options: `daemon.poll_interval`, `daemon.min_rounds`, `playbook.max_bullets`, `playbook.batch_size`, `playbook.default_model`, `sources.inputs`, `sources.outputs`.
 
-playbook:
-  max_bullets: 40         # hard cap; curator consolidates when exceeded
-  default_model: gpt-5.2
-  sections:
-    CODING_PATTERNS: coding
-    WORKFLOW_STRATEGIES: workflow
-    COMMUNICATION: communication
-    COMMON_MISTAKES: mistake
-    TOOL_USAGE: tool
-    OTHERS: other
-
-sources:
-  inputs:                 # which agent traces to read
-    - claude-code
-    - cursor
-    - codex
-  outputs:                # which rule files to update
-    - claude-code         # writes CLAUDE.md
-    - cursor              # writes .cursor/rules/retro.mdc
-    - codex               # writes AGENTS.md
-```
-
----
-
-## Source compatibility matrix
-
-### Inputs — where RetroCode reads traces from
-
-| Agent | `inputs` value | Trace location |
-|---|---|---|
-| Claude Code | `claude-code` | `~/.claude/projects/<key>/*.jsonl` |
-| Cursor | `cursor` | `~/.cursor/projects/<key>/agent-transcripts/*/*.jsonl` |
-| OpenAI Codex CLI | `codex` | `~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-*.jsonl` (filtered by `cwd`) |
-
-### Outputs — where RetroCode writes the playbook
-
-| Agent | `outputs` value | File written | Format |
-|---|---|---|---|
-| Claude Code | `claude-code` | `CLAUDE.md` | Markdown between retro markers |
-| Cursor | `cursor` | `.cursor/rules/retro.mdc` | MDC with `alwaysApply: true` |
-| OpenAI Codex CLI | `codex` | `AGENTS.md` | Markdown between retro markers |
-
-Default: all three inputs enabled, only `claude-code` output. To sync all agents:
-
-```yaml
-sources:
-  inputs:  [claude-code, cursor, codex]
-  outputs: [claude-code, cursor, codex]
-```
+See [docs/reference.md](docs/reference.md) for all options.
 
 ---
 
 ## LLM providers
 
-RetroCode uses **CommonStack** by default. CommonStack provides free credits for members, so most users won't need to configure anything beyond setting `COMMONSTACK_API_KEY`.
-
-If you prefer to use your own API key from another provider, set `LLM_PROVIDER` before running:
-
-```bash
-# OpenAI
-export LLM_PROVIDER=openai
-export OPENAI_API_KEY=your_key_here
-
-# Anthropic
-export LLM_PROVIDER=anthropic
-export ANTHROPIC_API_KEY=your_key_here
-
-# Gemini
-export LLM_PROVIDER=gemini
-export GEMINI_API_KEY=your_key_here
-
-# OpenRouter (for other models)
-export LLM_PROVIDER=openrouter
-export OPENROUTER_API_KEY=your_key_here
-
-# CommonStack (default — free credits available)
-export COMMONSTACK_API_KEY=your_key_here
-```
+Default is **CommonStack** (free credits for members). Override with `LLM_PROVIDER`:
 
 | Provider | `LLM_PROVIDER` | Key env var |
 |---|---|---|
-| CommonStack *(default, free credits)* | `commonstack` | `COMMONSTACK_API_KEY`, `COMMONSTACK_API_URL` *(optional)* |
+| CommonStack *(default)* | `commonstack` | `COMMONSTACK_API_KEY` |
 | OpenAI | `openai` | `OPENAI_API_KEY` |
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
 | Gemini | `gemini` | `GEMINI_API_KEY` |
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
-
-The default model is `gpt-5.2`. Override with `playbook.default_model` in `retro_config.yaml`.
-
----
-
-## Output files
-
-All intermediate files live in `.retro/` inside your project:
-
-```
-your-project/
-  retro_config.yaml           # optional config
-  CLAUDE.md                   # updated if claude-code in outputs
-  AGENTS.md                   # updated if codex in outputs
-  .cursor/rules/retro.mdc     # updated if cursor in outputs
-  .retro/
-    playbook.txt              # structured playbook with bullet IDs
-    daemon.log                # full daemon logs
-    .trace_state.json         # tracks which sessions have been processed
-    .retro.pid                # daemon PID
-```
-
-The playbook is injected between these markers — anything outside is untouched:
-
-```
-<!-- retro:start -->
-# Playbook
-...
-<!-- retro:end -->
-```
-
----
-
-## Playbook operations
-
-Each cycle the Curator can perform:
-
-- **ADD** — insert a new insight bullet into a section
-- **MODIFY** — update an existing bullet in place (keeps its ID)
-- **DELETE** — remove a bullet that is outdated or contradicted
-
-Bullets are capped at `max_bullets`. When exceeded, the curator consolidates (merges or deletes) to bring the count down.

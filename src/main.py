@@ -94,6 +94,7 @@ def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: R
         model=cfg.default_model,
         max_bullets=cfg.max_bullets,
         writers=writers,
+        batch_size=cfg.batch_size,
     )
     state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
     state = TraceState.load(state_path)
@@ -230,6 +231,45 @@ def stop_daemon(working_dir: str, pid_file: str) -> None:
         print("[retro] no retro processes found")
 
 
+def _collect_rounds(working_dir: str, retro_dir: Path) -> list[dict]:
+    """Parse all traces into labeled rounds. Shared by --pull and --hypogen."""
+    from src.hypoGen.trace_parser import parse_rounds_from_messages
+    from src.hypoGen.labeler import label_round, LabelStore
+
+    readers = [ClaudeReader(), CursorReader(), CodexReader()]
+    all_rounds: list[dict] = []
+    for reader in readers:
+        for fp in reader.find_trace_files(working_dir):
+            try:
+                data = reader.parse_session(fp)
+                all_rounds.extend(
+                    parse_rounds_from_messages(data["session_id"], data["messages"])
+                )
+            except Exception:
+                continue
+
+    if not all_rounds:
+        return []
+
+    # Label rounds
+    out_dir = retro_dir / "hypoGen"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    store = LabelStore(str(out_dir / "labeled_traces.json"))
+    for r in all_rounds:
+        existing = store.get(r["round_id"])
+        if existing is not None:
+            r["reward"] = existing
+        else:
+            r["reward"], reason = label_round(r["user_msg"], r["next_user_msg"])
+            store.set(r["round_id"], r["reward"], reason,
+                      user_msg=r["user_msg"], next_user_msg=r["next_user_msg"])
+    store.save()
+
+    # Convert to row format
+    return [{"session_id": r["round_id"], "msgs": r["msgs"],
+             "n_msgs": r["n_msgs"], "reward": r["reward"]} for r in all_rounds]
+
+
 def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
     """Run the round-level hypothesis generation pipeline."""
     import copy
@@ -352,6 +392,7 @@ def run_offline(working_dir: str, playbook_path: str, claude_md_path: str, cfg: 
         model=cfg.default_model,
         max_bullets=cfg.max_bullets,
         writers=writers,
+        batch_size=cfg.batch_size,
     )
     state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
     state = TraceState.load(state_path)
@@ -412,12 +453,20 @@ def main() -> None:
                         help="CLAUDE.md to sync playbook into (default: <dir>/CLAUDE.md)")
     parser.add_argument("--foreground", action="store_true",
                         help="Run in foreground instead of forking (useful for debugging)")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="Suppress all non-error output")
     parser.add_argument("--offline", action="store_true",
                         help="Run one update pass using all new sessions, then exit")
 
     # Hypothesis generation
     parser.add_argument("--hypogen", action="store_true",
                         help="Generate hypotheses about session patterns")
+    parser.add_argument("--submit", action="store_true",
+                        help="Review generated hypotheses and submit selected ones as a PR to the shared collection")
+    parser.add_argument("--pull", action="store_true",
+                        help="Download community hypotheses and verify them against your local traces")
+    parser.add_argument("--contribute", action="store_true",
+                        help="Submit your local verification stats for community hypotheses back as a PR")
     parser.add_argument("--no-llm", action="store_true",
                         help="(hypogen) Skip LLM calls, seed hypotheses only")
     parser.add_argument("--label-llm", action="store_true",
@@ -426,6 +475,11 @@ def main() -> None:
                         help="(hypogen) LLM propose+refine cycles (default: 2)")
 
     args = parser.parse_args()
+    # Patch builtins.print so -q suppresses all [retro] output without touching logging
+    if args.quiet:
+        import builtins
+        _real_print = builtins.print
+        builtins.print = lambda *a, **kw: None
     working_dir = str(Path(args.dir).resolve())
 
     # Load config from the user's project dir (falls back to built-in defaults)
@@ -438,6 +492,16 @@ def main() -> None:
 
     if args.hypogen:
         run_hypogen(working_dir, retro_dir, args)
+    elif args.submit:
+        from src.hypoGen.submitter import run_submit
+        run_submit(working_dir, retro_dir)
+    elif args.pull:
+        all_rounds = _collect_rounds(working_dir, retro_dir)
+        from src.hypoGen.community import run_pull
+        run_pull(working_dir, retro_dir, all_rounds)
+    elif args.contribute:
+        from src.hypoGen.community import run_contribute
+        run_contribute(working_dir, retro_dir)
     elif args.offline:
         run_offline(working_dir, playbook_path, claude_md_path, cfg)
     elif args.up:

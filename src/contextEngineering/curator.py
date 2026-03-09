@@ -59,25 +59,23 @@ we do not auto-prune.
 """
 
 CURATOR_PROMPT = """\
-Update the playbook based on these reflector insights.
+Update the playbook based on reflections from {num_reflections} conversation traces.
 
 Current playbook:
 <playbook>
 {playbook}
 </playbook>
 
-Reflector insights:
-<insights>
-{insights}
-</insights>
-
-Reflector summary:
-{summary}
+Reflections:
+<reflections>
+{reflections}
+</reflections>
 
 Current playbook stats:
 - Total bullets: {total_bullets} / {max_bullets} max{exceeded_note}
 - Sections: {sections}
 
+Look for patterns that recur across multiple reflections — these are higher-confidence. \
 Add genuinely new insights, modify stale ones, and delete contradicted ones. Be selective.\
 """
 
@@ -92,21 +90,21 @@ class Curator:
     def curate(
         self,
         current_playbook: str,
-        reflection: dict,
+        reflections: list[dict],
         next_global_id: int,
     ) -> tuple[str, int]:
-        """Update the playbook based on reflection insights.
+        """Update the playbook based on multiple per-trace reflections.
 
         Args:
             current_playbook: The current playbook text.
-            reflection: Output from the Reflector (insights + summary).
+            reflections: List of Reflector outputs (each has 'insights' + 'summary').
             next_global_id: Next available global bullet ID counter.
 
         Returns:
             Tuple of (updated_playbook, new_next_global_id).
         """
         stats = get_playbook_stats(current_playbook)
-        insights_text = self._format_insights(reflection.get("insights", []))
+        reflections_text = self._format_reflections(reflections)
         exceeded = stats["total_bullets"] > self.max_bullets
         exceeded_note = (
             " — CAP EXCEEDED: you must reduce the count (consolidate, merge, or delete) before adding new bullets"
@@ -116,8 +114,8 @@ class Curator:
 
         prompt = CURATOR_PROMPT.format(
             playbook=current_playbook,
-            insights=insights_text,
-            summary=reflection.get("summary", ""),
+            reflections=reflections_text,
+            num_reflections=len(reflections),
             total_bullets=stats["total_bullets"],
             max_bullets=self.max_bullets,
             exceeded_note=exceeded_note,
@@ -141,14 +139,21 @@ class Curator:
         # No auto-pruning: curator is responsible for keeping under cap
         return updated_playbook, next_global_id
 
-    def _format_insights(self, insights: list[dict]) -> str:
+    def _format_reflections(self, reflections: list[dict]) -> str:
+        """Format multiple reflections into a single text block for the curator."""
         parts = []
-        for i, insight in enumerate(insights, 1):
-            parts.append(
-                f"{i}. [{insight.get('category', 'UNKNOWN')}] "
-                f"{insight.get('recommendation', '')}\n"
-                f"   Evidence: {insight.get('evidence', 'N/A')}"
-            )
+        for idx, reflection in enumerate(reflections, 1):
+            parts.append(f"=== Reflection {idx} ===")
+            summary = reflection.get("summary", "")
+            if summary:
+                parts.append(f"Summary: {summary}")
+            for i, insight in enumerate(reflection.get("insights", []), 1):
+                parts.append(
+                    f"  {i}. [{insight.get('category', 'UNKNOWN')}] "
+                    f"{insight.get('recommendation', '')}\n"
+                    f"     Evidence: {insight.get('evidence', 'N/A')}"
+                )
+            parts.append("")
         return "\n".join(parts)
 
 

@@ -7,6 +7,7 @@ daemon:
 playbook:
   max_bullets: 40         # hard cap; curator must consolidate when exceeded
   default_model: gpt-5.2
+  batch_size: 4           # max parallel reflections per batch
   sections:
     CODING_PATTERNS: coding
     WORKFLOW_STRATEGIES: workflow
