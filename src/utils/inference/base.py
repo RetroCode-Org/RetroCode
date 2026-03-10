@@ -1,4 +1,7 @@
-"""Abstract base class for LLM inference providers."""
+"""Abstract base class for LLM inference providers.
+
+Test change to verify monitoring pipeline picks up edits.
+"""
 
 import json
 import logging

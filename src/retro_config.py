@@ -57,6 +57,14 @@ _DEFAULTS = {
         "inputs":  ["claude-code", "cursor", "codex"],
         "outputs": ["claude-code"],
     },
+    "monitoring": {
+        "port": 8585,
+        "refresh_interval": 30,
+        "exclude_dirs": [
+            ".venv", "venv", "__pycache__", ".git", "node_modules",
+            "build", "dist", ".tox", ".eggs",
+        ],
+    },
 }
 
 
@@ -75,6 +83,17 @@ class RetroConfig:
     # Compatibility matrix
     inputs: list[str]   # which trace sources to ingest
     outputs: list[str]  # which agent rule files to update
+    # Monitoring
+    monitor_port: int = 8585
+    monitor_refresh_interval: int = 30
+    monitor_exclude_dirs: list[str] = None
+
+    def __post_init__(self):
+        if self.monitor_exclude_dirs is None:
+            self.monitor_exclude_dirs = [
+                ".venv", "venv", "__pycache__", ".git", "node_modules",
+                "build", "dist", ".tox", ".eggs",
+            ]
 
 
 def load_config(working_dir: str | Path) -> RetroConfig:
@@ -83,6 +102,7 @@ def load_config(working_dir: str | Path) -> RetroConfig:
     d = cfg["daemon"]
     p = cfg["playbook"]
     s = cfg["sources"]
+    m = cfg.get("monitoring", {})
     return RetroConfig(
         poll_interval=d["poll_interval"],
         min_rounds=d["min_rounds"],
@@ -94,6 +114,9 @@ def load_config(working_dir: str | Path) -> RetroConfig:
         section_prefixes=p["sections"],
         inputs=s["inputs"],
         outputs=s["outputs"],
+        monitor_port=m.get("port", 8585),
+        monitor_refresh_interval=m.get("refresh_interval", 30),
+        monitor_exclude_dirs=m.get("exclude_dirs"),
     )
 
 

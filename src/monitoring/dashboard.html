@@ -1,0 +1,3953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetroCode Vibe Control Room</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#071115;
+  --bg-alt:#0b171d;
+  --surface:#102028;
+  --surface-2:#132933;
+  --surface-3:#183644;
+  --surface-soft:rgba(16,32,40,.74);
+  --border:rgba(132,176,191,.18);
+  --border-strong:rgba(132,176,191,.3);
+  --text:#f2f7f8;
+  --text-dim:#b4c4c9;
+  --text-muted:#6d838c;
+  --accent:#68d6ff;
+  --accent-2:#9ce9c4;
+  --green:#7ee787;
+  --green-bg:rgba(126,231,135,.12);
+  --yellow:#ffbf5f;
+  --yellow-bg:rgba(255,191,95,.12);
+  --red:#ff7d6b;
+  --red-bg:rgba(255,125,107,.12);
+  --blue:#7ab8ff;
+  --blue-bg:rgba(122,184,255,.12);
+  --shadow:0 24px 80px rgba(0,0,0,.28);
+  --radius:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Space Grotesk","Avenir Next","Segoe UI Variable",sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(104,214,255,.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(156,233,196,.08), transparent 25%),
+    linear-gradient(180deg, #061015 0%, #09151b 44%, #081116 100%);
+  overflow:hidden;
+}
+button,input{font:inherit;color:inherit}
+button{background:transparent;border:none}
+.app-shell{height:100%;display:flex;flex-direction:column}
+.topbar{
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(9,21,27,.92), rgba(9,21,27,.76));
+  backdrop-filter:blur(22px);
+}
+.topbar-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.brand{display:flex;flex-direction:column;gap:8px;min-width:0}
+.eyebrow{
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--accent-2);
+}
+.brand h1{
+  font-size:clamp(26px, 3vw, 40px);
+  line-height:1;
+  letter-spacing:-.04em;
+}
+.brand p{
+  max-width:720px;
+  color:var(--text-dim);
+  font-size:14px;
+}
+.topbar-actions{display:flex;flex-direction:column;gap:12px;align-items:flex-end;min-width:320px}
+.meta-strip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(16,32,40,.6);
+  color:var(--text-dim);
+  font-size:12px;
+}
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 6px rgba(104,214,255,.12);
+}
+.dot.green{background:var(--green);box-shadow:0 0 0 6px rgba(126,231,135,.12)}
+.dot.yellow{background:var(--yellow);box-shadow:0 0 0 6px rgba(255,191,95,.12)}
+.dot.red{background:var(--red);box-shadow:0 0 0 6px rgba(255,125,107,.12)}
+.actions-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.btn{
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(24,54,68,.88), rgba(16,32,40,.88));
+  color:var(--text);
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:12px;
+  cursor:pointer;
+  transition:transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--border-strong)}
+.btn:active{transform:translateY(0)}
+.btn.active{
+  border-color:rgba(104,214,255,.45);
+  background:linear-gradient(180deg, rgba(104,214,255,.24), rgba(24,54,68,.95));
+}
+.btn.subtle{
+  background:rgba(16,32,40,.48);
+}
+.source-picker{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.source-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:999px;
+  padding:9px 12px;
+  border:1px solid var(--border);
+  background:rgba(16,32,40,.58);
+  color:var(--text-dim);
+  cursor:pointer;
+  font-size:12px;
+}
+.source-pill.active{
+  color:var(--text);
+  border-color:rgba(104,214,255,.45);
+  background:rgba(104,214,255,.13);
+}
+.source-tag{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  padding:3px 7px;
+  border-radius:999px;
+  border:1px solid var(--border);
+}
+.badge-claude{background:rgba(122,184,255,.12);color:var(--blue)}
+.badge-cursor{background:rgba(255,191,95,.12);color:var(--yellow)}
+.badge-codex{background:rgba(126,231,135,.12);color:var(--green)}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:0 24px 16px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(9,21,27,.76), rgba(9,21,27,0));
+}
+.tab{
+  padding:10px 16px;
+  border-radius:999px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-size:13px;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.tab:hover{
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+}
+.tab.active{
+  color:var(--text);
+  border-color:rgba(104,214,255,.32);
+  background:rgba(104,214,255,.1);
+}
+.tab .count{
+  margin-left:8px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:var(--text-muted);
+  font-size:11px;
+}
+.tab.active .count{
+  background:rgba(104,214,255,.18);
+  color:var(--accent);
+}
+.content{
+  flex:1;
+  min-height:0;
+  padding:18px 24px 24px;
+}
+.view{display:none;height:100%}
+.view.active{display:block}
+.view-scroll{
+  height:100%;
+  overflow:auto;
+  padding-right:4px;
+}
+.grid{
+  display:grid;
+  gap:18px;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+  gap:18px;
+  margin-bottom:18px;
+}
+.panel{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:linear-gradient(180deg, rgba(16,32,40,.88), rgba(12,25,31,.88));
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  position:relative;
+}
+.panel::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent 26%);
+  pointer-events:none;
+}
+.panel-inner{padding:18px}
+.panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:16px;
+}
+.panel-title{font-size:18px;letter-spacing:-.03em}
+.panel-sub{color:var(--text-dim);font-size:13px;line-height:1.45}
+.hero-card{
+  padding:22px;
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  gap:18px;
+  min-height:220px;
+}
+.score-ring{
+  align-self:center;
+  justify-self:center;
+  width:170px;
+  height:170px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at center, rgba(7,17,21,1) 58%, transparent 60%),
+    conic-gradient(var(--tone) calc(var(--score) * 1%), rgba(255,255,255,.06) 0);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), 0 0 45px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+.score-core{
+  width:122px;
+  height:122px;
+  border-radius:50%;
+  background:linear-gradient(180deg, rgba(16,32,40,.98), rgba(9,21,27,.98));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.score-value{font-size:42px;line-height:1;font-weight:700;letter-spacing:-.06em}
+.score-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.16em}
+.hero-copy{display:flex;flex-direction:column;gap:14px;justify-content:center}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+  border-radius:999px;
+  width:max-content;
+  border:1px solid color-mix(in srgb, var(--tone) 28%, var(--border));
+  background:color-mix(in srgb, var(--tone) 12%, rgba(16,32,40,.86));
+  color:var(--text);
+  font-size:12px;
+}
+.hero-copy h2{font-size:30px;line-height:1;letter-spacing:-.05em}
+.hero-copy p{color:var(--text-dim);font-size:15px;line-height:1.55;max-width:64ch}
+.pill-row{display:flex;flex-wrap:wrap;gap:10px}
+.info-pill{
+  padding:8px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  font-size:12px;
+}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px}
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.metric-card{
+  padding:18px;
+  min-height:132px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  background:linear-gradient(180deg, rgba(19,41,51,.92), rgba(13,29,36,.92));
+}
+.metric-label{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--text-muted);
+}
+.metric-value{
+  font-size:34px;
+  line-height:1;
+  letter-spacing:-.06em;
+}
+.metric-note{
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.5;
+}
+.metric-note strong{color:var(--text)}
+.action-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+.action-card{
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)),
+    linear-gradient(180deg, rgba(11,23,29,.82), rgba(8,18,23,.88));
+  position:relative;
+  overflow:hidden;
+}
+.action-card::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:4px;
+  background:var(--tone, var(--accent));
+  opacity:.86;
+}
+.action-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:10px;
+}
+.action-head h4{
+  font-size:16px;
+  letter-spacing:-.03em;
+}
+.severity-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  border:1px solid rgba(255,255,255,.08);
+}
+.severity-urgent{color:var(--red);background:rgba(255,125,107,.12)}
+.severity-attention{color:var(--yellow);background:rgba(255,191,95,.12)}
+.severity-opportunity{color:var(--green);background:rgba(126,231,135,.12)}
+.action-copy{
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.55;
+}
+.action-copy + .action-copy{margin-top:8px}
+.action-files,
+.action-steps{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.action-line{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px 14px;
+  flex-wrap:wrap;
+  padding:9px 11px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.04);
+  font-size:12px;
+  color:var(--text-dim);
+}
+.action-line .clickable{
+  font-family:"IBM Plex Mono","SFMono-Regular",monospace;
+  font-size:11px;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  flex:1 1 auto;
+}
+.action-empty{
+  padding:14px;
+  border-radius:16px;
+  border:1px dashed var(--border);
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.6;
+}
+.signal-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.signal-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:11px;
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.03);
+}
+.signal-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:currentColor;
+}
+.signal-list{
+  display:grid;
+  gap:10px;
+}
+.signal-panel{
+  padding:12px 13px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.03);
+}
+.signal-panel h4{
+  font-size:13px;
+  margin-bottom:6px;
+}
+.signal-panel p{
+  font-size:12px;
+  color:var(--text-dim);
+  line-height:1.5;
+}
+.detail-actions{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.detail-actions li{
+  list-style:none;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.04);
+  background:rgba(255,255,255,.03);
+  font-size:12px;
+  color:var(--text-dim);
+}
+.test-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 11px;
+  border-radius:999px;
+  font-size:12px;
+  border:1px solid rgba(255,255,255,.05);
+}
+.detail-grid{
+  display:grid;
+  gap:14px;
+}
+.mini-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  color:var(--text-muted);
+}
+.section-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+  gap:18px;
+  margin-bottom:18px;
+}
+.triple-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  margin-bottom:18px;
+}
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.watch-item,
+.activity-item,
+.session-item,
+.file-row{
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:rgba(11,23,29,.62);
+}
+.watch-item{padding:14px 15px}
+.watch-top,
+.activity-top,
+.session-top,
+.file-row{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+}
+.watch-item:hover,
+.activity-item:hover,
+.session-item:hover,
+.file-row:hover{border-color:var(--border-strong)}
+.watch-path,
+.file-path,
+.clickable{
+  color:var(--text);
+  text-decoration:none;
+  cursor:pointer;
+}
+.watch-path:hover,
+.file-path:hover,
+.clickable:hover{color:var(--accent)}
+.path-line{
+  font-family:"IBM Plex Mono","SFMono-Regular",monospace;
+  font-size:12px;
+  line-height:1.5;
+  word-break:break-word;
+}
+.tiny{
+  font-size:11px;
+  color:var(--text-muted);
+}
+.risk-tag,.tier-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  border:1px solid var(--border);
+}
+.tone-green{color:var(--green);background:var(--green-bg)}
+.tone-yellow{color:var(--yellow);background:var(--yellow-bg)}
+.tone-red{color:var(--red);background:var(--red-bg)}
+.tone-blue{color:var(--blue);background:var(--blue-bg)}
+.muted{color:var(--text-dim)}
+.watch-meta,.activity-meta,.session-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.mini-chip{
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  color:var(--text-dim);
+  font-size:11px;
+  border:1px solid rgba(255,255,255,.04);
+}
+.micro-bar{
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  overflow:hidden;
+  margin-top:12px;
+}
+.micro-fill{
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--tone) 0%, color-mix(in srgb, var(--tone) 62%, white) 100%);
+}
+.bars{display:flex;align-items:flex-end;gap:10px;min-height:158px;padding-top:20px}
+.bar-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.bar-outer{
+  width:100%;
+  border-radius:14px 14px 10px 10px;
+  background:linear-gradient(180deg, rgba(104,214,255,.12), rgba(16,32,40,.2));
+  border:1px solid rgba(104,214,255,.08);
+  overflow:hidden;
+  position:relative;
+}
+.bar-fill{
+  width:100%;
+  background:linear-gradient(180deg, rgba(104,214,255,.75), rgba(27,78,96,.68));
+  animation:rise .6s ease both;
+  transform-origin:bottom;
+}
+@keyframes rise{
+  from{transform:scaleY(.12);opacity:.2}
+  to{transform:scaleY(1);opacity:1}
+}
+.bar-day{font-size:11px;color:var(--text-muted)}
+.bar-value{font-size:12px;font-weight:500;color:var(--text-dim)}
+.stack-list{display:flex;flex-direction:column;gap:12px}
+.stack-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+}
+.stack-label{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-size:13px;
+  color:var(--text-dim);
+}
+.stack-track{
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.stack-fill{
+  height:100%;
+  border-radius:999px;
+}
+.key-points{display:grid;gap:12px}
+.point{
+  padding:14px 15px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:rgba(11,23,29,.62);
+}
+.point h4{font-size:13px;margin-bottom:6px}
+.point p{color:var(--text-dim);font-size:13px;line-height:1.5}
+.point-list{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.point-item{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  color:var(--text-dim);
+}
+.point-item .clickable{
+  font-family:"IBM Plex Mono","SFMono-Regular",monospace;
+  font-size:11px;
+}
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+.toolbar-group{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{
+  min-width:260px;
+  padding:11px 13px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.68);
+  color:var(--text);
+}
+.search:focus{outline:none;border-color:rgba(104,214,255,.34)}
+.health-strip{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+.tier-card{
+  padding:18px;
+  cursor:pointer;
+  min-height:154px;
+}
+.tier-card.active{border-color:rgba(104,214,255,.36)}
+.tier-card h3{font-size:14px;margin-bottom:8px}
+.tier-card .big{font-size:34px;line-height:1;letter-spacing:-.05em}
+.tier-card .tier-meta{margin-top:14px;display:grid;gap:6px;color:var(--text-dim);font-size:12px}
+.file-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);
+  gap:18px;
+  min-height:0;
+}
+.file-list{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.file-group{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.group-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+  padding:0 4px 2px;
+}
+.group-head h3{font-size:15px}
+.group-head span{font-size:12px;color:var(--text-muted)}
+.file-row{
+  padding:14px 15px;
+  cursor:pointer;
+}
+.file-row.active{
+  border-color:rgba(104,214,255,.36);
+  background:rgba(104,214,255,.08);
+}
+.file-main{flex:1;min-width:0}
+.file-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.file-signals{margin-top:10px}
+.file-detail{
+  padding:18px;
+  overflow:auto;
+}
+.detail-section{
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+.detail-title{
+  font-size:12px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  margin-bottom:10px;
+}
+.kv{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  padding:8px 0;
+  font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--text-dim)}
+.mono{
+  font-family:"IBM Plex Mono","SFMono-Regular",monospace;
+}
+.dependency-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:240px;
+  overflow:auto;
+}
+.dependency-item{
+  padding:9px 11px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.55);
+  font-size:12px;
+  word-break:break-word;
+}
+.editor-strip{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;
+}
+.editor-card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:12px;
+  background:rgba(11,23,29,.55);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.editor-card strong{
+  font-size:22px;
+  line-height:1;
+  letter-spacing:-.04em;
+}
+.graph-note,
+.graph-foot{
+  font-size:12px;
+  color:var(--text-dim);
+  line-height:1.55;
+}
+.graph-shell{
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at top, rgba(104,214,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(11,23,29,.92), rgba(7,16,21,.92));
+  overflow:hidden;
+}
+.graph-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:10px;
+}
+.graph-legend-item{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.03);
+  font-size:11px;
+  color:var(--text-dim);
+}
+.graph-dot{
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  display:inline-block;
+}
+.graph-toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px 0;
+}
+.graph-toolgroup{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.graph-toolbtn{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+  border-radius:12px;
+  min-width:34px;
+  height:34px;
+  padding:0 10px;
+  cursor:pointer;
+  font-size:13px;
+}
+.graph-toolbtn:hover{background:rgba(255,255,255,.08)}
+.graph-zoom{
+  font-size:11px;
+  color:var(--text-muted);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.dependency-graph{
+  width:100%;
+  height:340px;
+  display:block;
+  touch-action:none;
+}
+.graph-empty{
+  padding:26px;
+  text-align:center;
+  color:var(--text-dim);
+}
+.overview-focus{
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);
+  gap:18px;
+  align-items:start;
+}
+.focus-targets{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:14px 0 18px;
+}
+.focus-target{
+  appearance:none;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.55);
+  color:var(--text);
+  border-radius:999px;
+  padding:9px 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  max-width:100%;
+}
+.focus-target.active{
+  border-color:rgba(104,214,255,.38);
+  background:rgba(104,214,255,.09);
+}
+.focus-target .tiny{
+  white-space:nowrap;
+  margin:0;
+}
+.focus-side{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-width:0;
+}
+.focus-kv{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.focus-card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:12px;
+  background:rgba(11,23,29,.55);
+}
+.focus-label{
+  font-size:11px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.focus-card strong{
+  display:block;
+  margin-top:8px;
+  font-size:18px;
+  line-height:1.1;
+  letter-spacing:-.03em;
+}
+.focus-card .tiny{
+  margin-top:6px;
+}
+.focus-section{
+  border-top:1px solid var(--border);
+  padding-top:14px;
+}
+.focus-actions{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.focus-action{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.55);
+  font-size:12px;
+  line-height:1.55;
+}
+.trace-banner{
+  margin-bottom:16px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid rgba(104,214,255,.22);
+  background:rgba(104,214,255,.08);
+  font-size:13px;
+  line-height:1.55;
+}
+.trace-focus{
+  border-color:rgba(104,214,255,.38);
+  box-shadow:0 0 0 1px rgba(104,214,255,.14);
+}
+.trace-hit{
+  border-color:rgba(104,214,255,.26);
+  background:rgba(104,214,255,.06);
+}
+.chat-shell{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.chat-prompts{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.chat-prompt{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.03);
+  color:var(--text-dim);
+  border-radius:999px;
+  padding:8px 11px;
+  font-size:11px;
+  cursor:pointer;
+}
+.chat-prompt:hover{
+  color:var(--text);
+  background:rgba(255,255,255,.07);
+}
+.chat-input{
+  width:100%;
+  min-height:86px;
+  border-radius:18px;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.62);
+  color:var(--text);
+  padding:12px 14px;
+  resize:vertical;
+  font:inherit;
+  line-height:1.55;
+}
+.chat-actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.chat-response{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.chat-question,
+.chat-answer{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:12px 14px;
+  line-height:1.6;
+}
+.chat-question{background:rgba(255,255,255,.03)}
+.chat-answer{background:rgba(104,214,255,.06)}
+.chat-note{
+  font-size:12px;
+  color:var(--text-dim);
+  line-height:1.55;
+}
+.history-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:12px;
+  margin-bottom:10px;
+}
+.history-head .tiny{margin:0}
+.session-layout{
+  display:grid;
+  grid-template-columns:minmax(320px,.76fr) minmax(0,1.24fr);
+  gap:18px;
+  min-height:0;
+}
+.session-list{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  overflow:auto;
+}
+.session-item{
+  padding:15px;
+  cursor:pointer;
+}
+.session-item.active{
+  border-color:rgba(104,214,255,.36);
+  background:rgba(104,214,255,.08);
+}
+.session-summary{
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.5;
+  margin-top:10px;
+}
+.session-detail{
+  padding:18px;
+  overflow:auto;
+}
+.review-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+.review-card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  background:rgba(11,23,29,.55);
+}
+.review-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px}
+.review-card ul{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  list-style:none;
+}
+.rounds{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:18px;
+}
+.round-card{
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  background:rgba(11,23,29,.55);
+}
+.round-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:15px 16px;
+  cursor:pointer;
+}
+.round-head:hover{background:rgba(255,255,255,.03)}
+.round-title{font-size:14px}
+.round-body{
+  display:none;
+  border-top:1px solid var(--border);
+  padding:14px 16px 16px;
+}
+.round-card.expanded .round-body{display:block}
+.prompt-preview{
+  font-size:13px;
+  line-height:1.55;
+  color:var(--text-dim);
+  border-left:3px solid rgba(104,214,255,.34);
+  padding-left:12px;
+  margin-bottom:14px;
+}
+.edit-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.edit-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:10px;
+  align-items:center;
+  border:1px solid rgba(255,255,255,.04);
+  border-radius:16px;
+  padding:12px;
+}
+.empty{
+  padding:26px;
+  border:1px dashed var(--border);
+  border-radius:20px;
+  color:var(--text-dim);
+  text-align:center;
+  line-height:1.6;
+}
+.status-flash{
+  animation:panelFlash 1.4s ease;
+}
+@keyframes panelFlash{
+  0%{box-shadow:0 0 0 rgba(104,214,255,0)}
+  35%{box-shadow:0 0 0 1px rgba(104,214,255,.3), 0 0 38px rgba(104,214,255,.18)}
+  100%{box-shadow:var(--shadow)}
+}
+/* ---- Dep Graph tab ---- */
+.graph-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 400px;
+  height:100%;
+}
+.graph-canvas-wrap{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 40% 40%, rgba(104,214,255,.04), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(156,233,196,.03), transparent 50%),
+    linear-gradient(180deg, rgba(7,17,21,1), rgba(9,21,27,1));
+  border-right:1px solid var(--border);
+  border-radius:var(--radius) 0 0 var(--radius);
+}
+.graph-canvas-svg{
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
+.graph-sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:18px;
+  overflow:auto;
+  background:linear-gradient(180deg, rgba(16,32,40,.88), rgba(12,25,31,.88));
+  border-radius:0 var(--radius) var(--radius) 0;
+  border:1px solid var(--border);
+  border-left:none;
+}
+.graph-controls{
+  position:absolute;
+  top:14px;
+  left:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  z-index:10;
+}
+.graph-info-bar{
+  position:absolute;
+  bottom:14px;
+  left:14px;
+  right:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  z-index:10;
+  pointer-events:none;
+}
+.graph-info-bar .graph-legend-item{pointer-events:auto}
+.graph-node-label{
+  pointer-events:none;
+  user-select:none;
+  font-family:"IBM Plex Mono","SFMono-Regular",monospace;
+}
+.graph-sidebar .edit-timeline{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:320px;
+  overflow:auto;
+}
+.graph-sidebar .edit-entry{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(11,23,29,.55);
+  font-size:12px;
+}
+.graph-sidebar .sidebar-section{
+  border-top:1px solid var(--border);
+  padding-top:14px;
+}
+.graph-sidebar .sidebar-title{
+  font-size:12px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  margin-bottom:10px;
+}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(132,176,191,.18);border-radius:999px}
+@media (max-width: 1220px){
+  .hero-grid,
+  .section-grid,
+  .file-layout,
+  .session-layout{grid-template-columns:1fr}
+  .triple-grid,
+  .overview-focus{grid-template-columns:1fr}
+  .graph-layout{grid-template-columns:1fr}
+  .graph-sidebar{border-left:1px solid var(--border);border-radius:var(--radius)}
+  .graph-canvas-wrap{border-radius:var(--radius);border-right:none}
+}
+@media (max-width: 900px){
+  body{overflow:auto}
+  .app-shell{height:auto;min-height:100%}
+  .content{padding:16px}
+  .topbar{padding:16px}
+  .tabs{padding:0 16px 12px;overflow:auto}
+  .topbar-row{flex-direction:column}
+  .topbar-actions{align-items:flex-start;min-width:0}
+  .hero-card{grid-template-columns:1fr}
+  .health-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .review-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr}
+  .action-grid{grid-template-columns:1fr}
+  .search{min-width:0;width:100%}
+  .editor-strip{grid-template-columns:1fr}
+  .focus-kv{grid-template-columns:1fr}
+}
+@media (max-width: 620px){
+  .health-strip{grid-template-columns:1fr}
+  .metric-value{font-size:28px}
+  .hero-copy h2{font-size:24px}
+  .focus-target{
+    width:100%;
+    justify-content:space-between;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <span class="eyebrow">RetroCode Monitor</span>
+        <h1>Vibe Control Room</h1>
+        <p>Track where AI-authored changes land, how much of the repo they can shake, and which sessions actually deserve a human pass.</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="meta-strip" id="meta-strip">
+          <span class="chip">Loading monitor state...</span>
+        </div>
+        <div class="source-picker" id="source-picker"></div>
+        <div class="actions-row">
+          <button class="btn subtle" type="button" data-refresh="1" id="refresh-btn">Refresh</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabbar">
+    <button class="tab active" type="button" data-tab-target="overview">Control Room <span class="count" id="overview-count">0</span></button>
+    <button class="tab" type="button" data-tab-target="files">File Radar <span class="count" id="files-count">0</span></button>
+    <button class="tab" type="button" data-tab-target="sessions">Session Replay <span class="count" id="sessions-count">0</span></button>
+    <button class="tab" type="button" data-tab-target="graph">Dep Graph <span class="count" id="graph-count">0</span></button>
+  </nav>
+
+  <main class="content">
+    <section class="view active" id="view-overview">
+      <div class="view-scroll" id="overview-root"></div>
+    </section>
+
+    <section class="view" id="view-files">
+      <div class="view-scroll">
+        <div class="health-strip" id="tier-strip"></div>
+        <div class="toolbar">
+          <div class="toolbar-group">
+            <input class="search" id="file-search" placeholder="Search touched files, directories, or modules">
+            <button class="btn subtle active" type="button" data-files-scope="touched">Touched files</button>
+            <button class="btn subtle" type="button" data-files-scope="all">All graph files</button>
+          </div>
+          <div class="toolbar-group" id="sort-toolbar"></div>
+        </div>
+        <div class="file-layout">
+          <div class="panel">
+            <div class="file-list" id="file-list"></div>
+          </div>
+          <div class="panel">
+            <div class="file-detail" id="file-detail"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-sessions">
+      <div class="view-scroll">
+        <div class="toolbar">
+          <div class="toolbar-group" id="session-scope-toolbar"></div>
+          <div class="toolbar-group" id="session-risk-toolbar"></div>
+        </div>
+        <div class="session-layout">
+          <div class="panel">
+            <div class="session-list" id="session-list"></div>
+          </div>
+          <div class="panel">
+            <div class="session-detail" id="session-detail"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-graph">
+      <div class="graph-layout">
+        <div class="graph-canvas-wrap">
+          <div class="graph-controls">
+            <button class="btn subtle" type="button" data-graph-action="reset">Reset layout</button>
+          </div>
+          <svg class="graph-canvas-svg" id="graph-svg"></svg>
+          <div class="graph-info-bar">
+            <span class="graph-legend-item"><span class="graph-dot" style="background:var(--red)"></span>T1 Critical</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:var(--yellow)"></span>T2 Shared</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:var(--blue)"></span>T3 Feature</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:var(--text-muted)"></span>T4 Leaf</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent)"></span>AI-edited</span>
+          </div>
+        </div>
+        <div class="graph-sidebar" id="graph-sidebar">
+          <div class="empty">Click any node in the graph to inspect its edit history across editors.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const state = {
+  risk: null,
+  health: null,
+  sessions: null,
+  status: null,
+  timeline: null,
+  tab: 'overview',
+  sourceFilter: null,
+  selectedTier: null,
+  selectedFile: null,
+  selectedOverviewGraphFile: null,
+  selectedSession: null,
+  selectedSessionTrace: null,
+  fileSort: 'risk',
+  filesScope: 'touched',
+  sessionScope: 'all',
+  sessionRisk: 'all',
+  fileDetailCache: new Map(),
+  fileChat: new Map(),
+  graphData: null,
+  selectedGraphNode: null,
+};
+
+const SOURCE_LABELS = {
+  'claude-code': 'Claude',
+  'cursor': 'Cursor',
+  'codex': 'Codex',
+};
+
+function apiUrl(path) {
+  if (!state.sourceFilter) return path;
+  const joiner = path.includes('?') ? '&' : '?';
+  return `${path}${joiner}source=${encodeURIComponent(state.sourceFilter)}`;
+}
+
+function esc(text) {
+  return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escAttr(text) {
+  return esc(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function fmtTime(iso) {
+  if (!iso) return 'No timestamp';
+  try { return new Date(iso).toLocaleString(); } catch { return iso; }
+}
+
+function fmtShort(iso) {
+  if (!iso) return 'unknown';
+  try { return new Date(iso).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}); } catch { return iso; }
+}
+
+function fmtRelative(iso) {
+  if (!iso) return 'No timestamp';
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    if (diff < 0) return 'just now';
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return new Date(iso).toLocaleDateString();
+  } catch {
+    return iso;
+  }
+}
+
+function riskTone(risk) {
+  return risk === 'high' ? 'var(--red)' : risk === 'medium' ? 'var(--yellow)' : risk === 'low' ? 'var(--green)' : 'var(--text-muted)';
+}
+
+function healthTone(health) {
+  return health === 'red' ? 'var(--red)' : health === 'yellow' ? 'var(--yellow)' : 'var(--green)';
+}
+
+function tierTone(tier) {
+  return tier === 1 ? 'var(--red)' : tier === 2 ? 'var(--yellow)' : tier === 3 ? 'var(--blue)' : 'var(--text-muted)';
+}
+
+function toneClassFromHealth(health) {
+  return health === 'red' ? 'tone-red' : health === 'yellow' ? 'tone-yellow' : 'tone-green';
+}
+
+function toneClassFromTier(tier) {
+  return tier === 1 ? 'tone-red' : tier === 2 ? 'tone-yellow' : tier === 3 ? 'tone-blue' : 'tone-green';
+}
+
+function toneClassFromRisk(risk) {
+  return risk === 'high' ? 'tone-red' : risk === 'medium' ? 'tone-yellow' : risk === 'low' ? 'tone-green' : 'tone-blue';
+}
+
+function toneClassFromName(tone) {
+  return tone === 'red' ? 'tone-red' : tone === 'yellow' ? 'tone-yellow' : tone === 'green' ? 'tone-green' : 'tone-blue';
+}
+
+function severityClass(severity) {
+  return severity === 'urgent' ? 'severity-urgent' : severity === 'attention' ? 'severity-attention' : 'severity-opportunity';
+}
+
+function severityLabel(severity) {
+  return severity === 'urgent' ? 'Do now' : severity === 'attention' ? 'Watch next' : 'Good place to move';
+}
+
+function sourceBadge(source) {
+  return source === 'claude-code' ? 'badge-claude' : source === 'cursor' ? 'badge-cursor' : 'badge-codex';
+}
+
+function sessionHasEdits(session) {
+  return !!(session && session.files_edited && session.files_edited.length);
+}
+
+function pathDir(path) {
+  if (!path) return '(root)';
+  const idx = path.lastIndexOf('/');
+  return idx === -1 ? '(root)' : path.slice(0, idx);
+}
+
+function flattenFiles() {
+  if (!state.health) return [];
+  return state.health.tiers.flatMap(tier =>
+    tier.files.map(file => ({
+      ...file,
+      tier: tier.tier,
+      tier_label: tier.label,
+      tier_description: tier.description,
+      tier_edited_file_count: tier.edited_file_count,
+    }))
+  );
+}
+
+function computeDerived() {
+  const sessions = state.sessions?.sessions || [];
+  const events = state.timeline?.events || [];
+  const actionCounts = state.risk?.action_counts || {};
+  const actionItems = state.risk?.action_items || [];
+  const files = flattenFiles();
+  const touchedFiles = files.filter(file => file.edit_count > 0);
+  const changedSessions = sessions.filter(sessionHasEdits);
+  const quietSessions = sessions.filter(s => !sessionHasEdits(s));
+  const churnFiles = touchedFiles
+    .filter(file => file.edit_count >= 2)
+    .sort((a, b) => (b.edit_count - a.edit_count) || (b.risk_score - a.risk_score));
+  const leafTouchedFiles = touchedFiles
+    .filter(file => file.tier >= 4)
+    .sort((a, b) => (b.edit_count - a.edit_count) || a.path.localeCompare(b.path));
+
+  const dirMap = new Map();
+  touchedFiles.forEach(file => {
+    const dir = pathDir(file.path);
+    const current = dirMap.get(dir) || {path: dir, files: 0, edits: 0, risk: 0};
+    current.files += 1;
+    current.edits += file.edit_count;
+    current.risk += file.risk_score;
+    dirMap.set(dir, current);
+  });
+  const topDirs = [...dirMap.values()].sort((a, b) => (b.edits - a.edits) || (b.risk - a.risk)).slice(0, 5);
+
+  const toolMap = new Map();
+  events.forEach(event => {
+    const label = event.tool_name || event.action || 'Unknown';
+    toolMap.set(label, (toolMap.get(label) || 0) + 1);
+  });
+  const toolMix = [...toolMap.entries()]
+    .map(([tool, count]) => ({tool, count}))
+    .sort((a, b) => b.count - a.count);
+
+  const recentChangedSessions = changedSessions.slice(0, 6);
+  const topHotspot =
+    state.risk?.hotspots?.danger?.[0] ||
+    state.risk?.review_queue?.[0] ||
+    churnFiles[0] ||
+    touchedFiles[0] ||
+    null;
+
+  const now = new Date();
+  const daily = [];
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const date = new Date(now);
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - offset);
+    const key = date.toISOString().slice(0, 10);
+    daily.push({key, label: date.toLocaleDateString([], {weekday: 'short'}), events: 0, sessions: 0});
+  }
+  const dailyIndex = new Map(daily.map(day => [day.key, day]));
+  events.forEach(event => {
+    if (!event.timestamp) return;
+    const key = event.timestamp.slice(0, 10);
+    const bucket = dailyIndex.get(key);
+    if (bucket) bucket.events += 1;
+  });
+  changedSessions.forEach(session => {
+    if (!session.timestamp) return;
+    const key = session.timestamp.slice(0, 10);
+    const bucket = dailyIndex.get(key);
+    if (bucket) bucket.sessions += 1;
+  });
+
+  const reasons = [];
+  if (state.risk?.health === 'red') reasons.push('Critical files were touched and should be reviewed before shipping.');
+  if (state.risk?.health === 'yellow') reasons.push('Shared files or repeated edits are starting to stack up.');
+  if (actionCounts.quiet_core) reasons.push('At least one quiet load-bearing file changed, which means a small diff could still fan out broadly.');
+  if (actionCounts.test_gap) reasons.push('Some touched shared files do not have an obvious nearby test path.');
+  if ((state.risk?.hotspots?.danger || []).length) reasons.push('Some files combine high blast radius with repeated churn.');
+  if (churnFiles.length >= 3) reasons.push('A handful of files are getting edited repeatedly across sessions.');
+  if (!reasons.length) reasons.push('Recent AI changes are staying inside feature or leaf-level files.');
+
+  let score = state.risk?.health === 'red' ? 34 : state.risk?.health === 'yellow' ? 61 : 82;
+  score -= Math.min(18, (state.risk?.hotspots?.danger?.length || 0) * 6);
+  score -= Math.min(18, (actionCounts.quiet_core || 0) * 6);
+  score -= Math.min(12, (actionCounts.test_gap || 0) * 3);
+  score -= Math.min(12, churnFiles.filter(file => file.edit_count >= 3).length * 3);
+  score -= Math.min(8, (state.risk?.review_queue || []).filter(file => file.tier <= 2).length * 4);
+  if ((state.risk?.review_queue || []).length === 0 && changedSessions.length) score += 4;
+  if (!changedSessions.length) score = 92;
+  score = Math.max(18, Math.min(98, score));
+
+  const scoreLabel = score >= 80 ? 'Within control' : score >= 60 ? 'Watch the edges' : 'Needs a human pass';
+
+  return {
+    sessions,
+    files,
+    touchedFiles,
+    changedSessions,
+    quietSessions,
+    churnFiles,
+    leafTouchedFiles,
+    topDirs,
+    toolMix,
+    recentChangedSessions,
+    topHotspot,
+    daily,
+    reasons,
+    score,
+    scoreLabel,
+    actionItems,
+    actionCounts,
+  };
+}
+
+async function fetchJson(path, options = {}) {
+  const response = await fetch(apiUrl(path), options);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `${response.status}`);
+  }
+  return response.json();
+}
+
+async function fetchFileDetail(path) {
+  if (!path) throw new Error('Missing file path.');
+  if (state.fileDetailCache.has(path)) {
+    return state.fileDetailCache.get(path);
+  }
+  const pending = fetchJson(`/api/file/${encodeURIComponent(path)}`).catch(error => {
+    state.fileDetailCache.delete(path);
+    throw error;
+  });
+  state.fileDetailCache.set(path, pending);
+  return pending;
+}
+
+async function loadAll({flash = false} = {}) {
+  const refreshBtn = document.getElementById('refresh-btn');
+  refreshBtn.textContent = 'Refreshing...';
+  try {
+    const [risk, health, sessions, status, timeline] = await Promise.all([
+      fetchJson('/api/risk-summary'),
+      fetchJson('/api/codebase-health'),
+      fetchJson('/api/sessions'),
+      fetchJson('/api/status'),
+      fetchJson('/api/timeline'),
+    ]);
+    const previousRisk = state.risk?.health;
+    state.risk = risk;
+    state.health = health;
+    state.sessions = sessions;
+    state.status = status;
+    state.timeline = timeline;
+    state.fileDetailCache = new Map();
+    state.graphData = null;
+    renderAll();
+    restoreSelections();
+    if (flash || (previousRisk && previousRisk !== risk.health)) {
+      document.querySelector('.topbar').classList.add('status-flash');
+      setTimeout(() => document.querySelector('.topbar').classList.remove('status-flash'), 1200);
+    }
+  } catch (error) {
+    document.getElementById('meta-strip').innerHTML = `<span class="chip">${esc(error.message)}</span>`;
+  } finally {
+    refreshBtn.textContent = 'Refresh';
+  }
+}
+
+function renderAll() {
+  const derived = computeDerived();
+  renderHeader(derived);
+  renderOverview(derived);
+  renderFiles(derived);
+  renderSessions(derived);
+  renderGraphTab(derived);
+}
+
+function renderHeader(derived) {
+  const meta = document.getElementById('meta-strip');
+  const health = state.risk?.health || 'green';
+  meta.innerHTML = `
+    <span class="chip"><span class="dot ${health}"></span>${esc(derived.scoreLabel)}</span>
+    <span class="chip">Updated ${esc(fmtTime(state.status?.last_refresh))}</span>
+  `;
+
+  const sourceCounts = state.status?.source_counts || {};
+  const total = Object.values(sourceCounts).reduce((sum, value) => sum + value, 0);
+  const picker = document.getElementById('source-picker');
+  const pills = [
+    `<button class="source-pill ${state.sourceFilter === null ? 'active' : ''}" type="button" data-source-filter="">
+      <span class="source-tag">All</span>
+      <span>${total} sessions</span>
+    </button>`,
+  ];
+  Object.entries(sourceCounts).forEach(([source, count]) => {
+    pills.push(`<button class="source-pill ${state.sourceFilter === source ? 'active' : ''}" type="button" data-source-filter="${escAttr(source)}">
+      <span class="source-tag ${sourceBadge(source)}">${esc(SOURCE_LABELS[source] || source)}</span>
+      <span>${count} sessions</span>
+    </button>`);
+  });
+  picker.innerHTML = pills.join('');
+
+  document.getElementById('overview-count').textContent = `${state.risk?.review_queue?.length || 0}`;
+  document.getElementById('files-count').textContent = `${derived.touchedFiles.length}`;
+  document.getElementById('sessions-count').textContent = `${derived.sessions.length}`;
+  document.getElementById('graph-count').textContent = `${state.status?.total_files || 0}`;
+}
+
+function renderOverviewLegacy(derived) {
+  const tone = healthTone(state.risk?.health || 'green');
+  const topHotspotText = derived.topHotspot ? derived.topHotspot.path : 'No file is drawing extra attention right now.';
+  const root = document.getElementById('overview-root');
+  const maxDaily = Math.max(1, ...derived.daily.map(day => day.events));
+  const watchItems = state.risk?.review_queue?.length
+    ? state.risk.review_queue.slice(0, 6).map(file => renderWatchItem(file)).join('')
+    : `<div class="empty">Nothing is in the review queue. Recent AI edits are staying inside low-blast parts of the repo.</div>`;
+  const activityItems = derived.changedSessions.length
+    ? derived.changedSessions.slice(0, 7).map(session => renderActivityItem(session)).join('')
+    : `<div class="empty">No sessions have changed files yet. Once the agent starts editing, this room will fill in automatically.</div>`;
+  const toolMix = derived.toolMix.length
+    ? derived.toolMix.slice(0, 5).map(item => renderStackRow(item.tool, item.count, derived.toolMix[0].count, tierTone(item.tool === 'Bash' ? 2 : item.tool === 'Write' ? 3 : 4))).join('')
+    : `<div class="empty">No file-edit tool activity yet.</div>`;
+  const topDirs = derived.topDirs.length
+    ? derived.topDirs.map(dir => renderStackRow(dir.path, `${dir.files} files`, derived.topDirs[0].edits || 1, 'var(--accent)', dir.edits)).join('')
+    : `<div class="empty">No active zones yet.</div>`;
+  const topChurn = derived.churnFiles.length
+    ? derived.churnFiles.slice(0, 5).map(file => renderPointItem(file.path, `${file.edit_count} sessions`)).join('')
+    : `<div class="empty">No repeated churn yet. Files are not bouncing between sessions.</div>`;
+  const lowRisk = derived.leafTouchedFiles.length
+    ? derived.leafTouchedFiles.slice(0, 5).map(file => renderPointItem(file.path, file.edit_count === 1 ? 'single touch' : `${file.edit_count} touches`)).join('')
+    : `<div class="empty">No leaf-level files have been touched yet.</div>`;
+  const actionCards = derived.actionItems.length
+    ? derived.actionItems.map(item => renderActionCard(item)).join('')
+    : `<div class="action-empty">No immediate action item is jumping out. That usually means the recent AI changes stayed small and contained.</div>`;
+
+  root.innerHTML = `
+    <div class="hero-grid">
+      <div class="panel">
+        <div class="hero-card">
+          <div class="score-ring" style="--score:${derived.score};--tone:${tone}">
+            <div class="score-core">
+              <div class="score-value">${derived.score}</div>
+              <div class="score-label">Control</div>
+            </div>
+          </div>
+          <div class="hero-copy">
+            <span class="hero-badge"><span class="dot ${state.risk?.health || 'green'}"></span>${esc(derived.scoreLabel)}</span>
+            <h2>${esc(state.risk?.verdict || 'Monitor is warming up.')}</h2>
+            <p>${esc(derived.reasons[0])}</p>
+            <div class="pill-row">
+              <span class="info-pill">${state.risk?.sessions_with_edits || 0} sessions changed code</span>
+              <span class="info-pill">${state.risk?.quiet_session_count || 0} quiet sessions</span>
+              <span class="info-pill">Highest tier touched: ${state.risk?.highest_tier_touched ? `T${state.risk.highest_tier_touched}` : 'none'}</span>
+            </div>
+            <div class="hero-actions">
+              <button class="btn" type="button" data-tab-target="files">Inspect touched files</button>
+              <button class="btn subtle" type="button" data-tab-target="sessions">Replay recent sessions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="panel metric-card">
+          <div>
+            <div class="metric-label">Quiet Shared/Core</div>
+            <div class="metric-value">${derived.actionCounts.quiet_core || 0}</div>
+          </div>
+          <div class="metric-note"><strong>${esc(topHotspotText)}</strong><br>Low-churn files with broad blast radius deserve a manual pass.</div>
+        </div>
+        <div class="panel metric-card">
+          <div>
+            <div class="metric-label">Test Gaps</div>
+            <div class="metric-value">${derived.actionCounts.test_gap || 0}</div>
+          </div>
+          <div class="metric-note">Touched shared files without an obvious nearby test path. Good candidates for a quick regression test.</div>
+        </div>
+        <div class="panel metric-card">
+          <div>
+            <div class="metric-label">Churned Files</div>
+            <div class="metric-value">${derived.actionCounts.churn || derived.churnFiles.length}</div>
+          </div>
+          <div class="metric-note">Repeated edits usually mean the intent is still drifting. Freeze the invariant before another round.</div>
+        </div>
+        <div class="panel metric-card">
+          <div>
+            <div class="metric-label">Safe Zones</div>
+            <div class="metric-value">${derived.actionCounts.safe_zone || derived.leafTouchedFiles.length}</div>
+          </div>
+          <div class="metric-note">Leaf files with low downstream risk. These are the best places to keep exploring fast.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-grid">
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Action Center</div>
+              <div class="panel-sub">Concrete next moves for the repo right now, ranked by what is most likely to keep vibe-coded changes under control.</div>
+            </div>
+            <button class="btn subtle" type="button" data-tab-target="files">Go to file radar</button>
+          </div>
+          <div class="action-grid">${actionCards}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Edit Pulse</div>
+              <div class="panel-sub">Daily edit events across the last week. Bursts usually mean the agent is feeling around for a stable shape.</div>
+            </div>
+          </div>
+          <div class="bars">
+            ${derived.daily.map(day => `
+              <div class="bar-col">
+                <div class="bar-value">${day.events}</div>
+                <div class="bar-outer" style="height:${Math.max(26, Math.round(day.events / maxDaily * 116) + 18)}px">
+                  <div class="bar-fill" style="height:100%"></div>
+                </div>
+                <div class="bar-day">${esc(day.label)}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="watch-meta">
+            ${derived.daily.map(day => `<span class="mini-chip">${esc(day.label)}: ${day.sessions} session${day.sessions === 1 ? '' : 's'}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-grid">
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Review Queue</div>
+              <div class="panel-sub">The files most likely to spread mistakes farther than the vibe intended.</div>
+            </div>
+            <button class="btn subtle" type="button" data-tab-target="files">Open radar</button>
+          </div>
+          <div class="list">${watchItems}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Protection Cues</div>
+              <div class="panel-sub">Fast heuristics for where you should slow down, where you should add a test, and where it is still safe to experiment.</div>
+            </div>
+          </div>
+          <div class="key-points">
+            <div class="point">
+              <h4>Slow down here</h4>
+              <p>${derived.actionCounts.quiet_core ? 'A quiet shared/core file moved. Treat it like infrastructure, not a quick vibe pass.' : 'No quiet shared/core files are currently active.'}</p>
+              <div class="point-list">
+                ${derived.actionCounts.quiet_core ? state.risk.action_items.filter(item => item.type === 'quiet-core').flatMap(item => item.files || []).slice(0, 3).map(file => renderPointItem(file.path, file.label)).join('') : '<div class="tiny">Nothing in the quiet-core bucket right now.</div>'}
+              </div>
+            </div>
+            <div class="point">
+              <h4>Add a test next</h4>
+              <p>${derived.actionCounts.test_gap ? 'The monitor found shared code without an obvious nearby test file.' : 'No obvious test gaps in the touched shared files.'}</p>
+              <div class="point-list">
+                ${derived.actionCounts.test_gap ? state.risk.action_items.filter(item => item.type === 'test-gap').flatMap(item => item.files || []).slice(0, 3).map(file => renderPointItem(file.path, file.label)).join('') : '<div class="tiny">Nothing currently needs a test backfill callout.</div>'}
+              </div>
+            </div>
+            <div class="point">
+              <h4>Keep iterating here</h4>
+              <p>Use leaf files as your sandbox before you ask the model to push behavior up into shared code.</p>
+              <div class="point-list">${lowRisk}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="triple-grid">
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Top Churn</div>
+              <div class="panel-sub">Repeatedly touched files are where unresolved intent tends to accumulate.</div>
+            </div>
+          </div>
+          <div class="point-list">${topChurn}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Active Zones</div>
+              <div class="panel-sub">Directories with the highest edit pressure right now.</div>
+            </div>
+          </div>
+          <div class="stack-list">${topDirs}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Tool Mix</div>
+              <div class="panel-sub">Which kinds of edits are shaping the current session history.</div>
+            </div>
+          </div>
+          <div class="stack-list">${toolMix}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-grid">
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Recent AI Activity</div>
+              <div class="panel-sub">Only sessions that actually changed files. Quiet chat sessions are tracked separately in the header.</div>
+            </div>
+            <button class="btn subtle" type="button" data-tab-target="sessions">Replay sessions</button>
+          </div>
+          <div class="list">${activityItems}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Flight Notes</div>
+              <div class="panel-sub">A practical read on what to review now, what to stabilize soon, and what can keep moving.</div>
+            </div>
+          </div>
+          <div class="key-points">
+            <div class="point">
+              <h4>Review now</h4>
+              <p>${esc(derived.reasons[0])}</p>
+              <div class="point-list">
+                ${(state.risk?.review_queue?.length ? state.risk.review_queue.slice(0, 4).map(file => renderPointItem(file.path, file.impact_label)).join('') : '<div class="tiny">No file currently demands immediate review.</div>')}
+              </div>
+            </div>
+            <div class="point">
+              <h4>Stabilize soon</h4>
+              <p>If a file keeps getting touched, the agent is still searching. That is usually when specs get fuzzy.</p>
+              <div class="point-list">${topChurn}</div>
+            </div>
+            <div class="point">
+              <h4>Safe places to keep iterating</h4>
+              <p>These are low-blast files that have already absorbed AI edits without spreading risk widely.</p>
+              <div class="point-list">${lowRisk}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSessionPoint(session) {
+  const label = `${SOURCE_LABELS[session.source] || session.source} · ${fmtRelative(session.timestamp)}`;
+  const summary = sessionHasEdits(session)
+    ? `${session.files_edited.length} files · ${session.num_rounds} rounds`
+    : `${session.num_rounds} rounds · no file edits`;
+  return `
+    <div class="point-item">
+      <span class="clickable" data-open-session="${escAttr(session.session_id)}">${esc(label)}</span>
+      <span>${esc(summary)}</span>
+    </div>
+  `;
+}
+
+function getFileChatState(path) {
+  if (!state.fileChat.has(path)) {
+    state.fileChat.set(path, {
+      draft: '',
+      question: '',
+      answer: '',
+      warning: '',
+      error: '',
+      loading: false,
+      requestId: 0,
+    });
+  }
+  return state.fileChat.get(path);
+}
+
+function renderChatAnswer(answer) {
+  return esc(answer || '').replace(/\n/g, '<br>');
+}
+
+function openTrace(sessionId, roundNum, filePath) {
+  if (!sessionId) return;
+  state.selectedSessionTrace = {sessionId, roundNum, filePath};
+  switchTab('sessions');
+  selectSession(sessionId);
+}
+
+async function openLatestTraceForFile(filePath, detailData = null) {
+  try {
+    const data = detailData && detailData.path === filePath ? detailData : await fetchFileDetail(filePath);
+    const latest = data.edit_history?.[0];
+    if (!latest) return;
+    openTrace(latest.session_id, latest.round_num, filePath);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function renderOverviewChat(path) {
+  const mount = document.getElementById('overview-chat-mount');
+  if (!mount || !path) return;
+  const chat = getFileChatState(path);
+  const quickPrompts = [
+    'Summarize what changed across different editors.',
+    'Which trace should I review first and why?',
+    'What is the risky part of these recent edits?',
+  ];
+  mount.innerHTML = `
+    <div class="chat-shell">
+      <div class="chat-prompts">
+        ${quickPrompts.map(prompt => `
+          <button class="chat-prompt" type="button" data-chat-prompt="${escAttr(prompt)}" data-chat-file="${escAttr(path)}">${esc(prompt)}</button>
+        `).join('')}
+      </div>
+      <textarea
+        class="chat-input"
+        data-chat-input="${escAttr(path)}"
+        placeholder="Ask what changed, which editor drove the file, or what to review next..."
+      >${esc(chat.draft)}</textarea>
+      <div class="chat-actions">
+        <span class="tiny">Uses the selected file's dependency graph, edit history, and recent traces.</span>
+        <button class="btn" type="button" data-chat-submit="${escAttr(path)}"${chat.loading ? ' disabled' : ''}>
+          ${chat.loading ? 'Thinking...' : 'Ask AI'}
+        </button>
+      </div>
+      ${chat.warning ? `<div class="chat-note">${esc(chat.warning)}</div>` : ''}
+      ${chat.error ? `<div class="empty">${esc(chat.error)}</div>` : ''}
+      ${chat.answer ? `
+        <div class="chat-response">
+          <div class="chat-question"><strong>Question</strong><br>${esc(chat.question)}</div>
+          <div class="chat-answer"><strong>Answer</strong><br>${renderChatAnswer(chat.answer)}</div>
+        </div>
+      ` : '<div class="tiny">Ask for a cross-editor summary, a risky trace, or a review plan for this file.</div>'}
+    </div>
+  `;
+}
+
+async function submitOverviewChat(path, question = null) {
+  if (!path) return;
+  const chat = getFileChatState(path);
+  const prompt = (question ?? chat.draft ?? '').trim();
+  if (!prompt) return;
+  chat.draft = prompt;
+  chat.question = prompt;
+  chat.loading = true;
+  chat.error = '';
+  chat.warning = '';
+  const requestId = chat.requestId + 1;
+  chat.requestId = requestId;
+  renderOverviewChat(path);
+  try {
+    const data = await fetchJson('/api/file-chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        file_path: path,
+        question: prompt,
+      }),
+    });
+    if (getFileChatState(path).requestId !== requestId) return;
+    chat.answer = data.answer || '';
+    chat.warning = data.warning || '';
+    chat.error = '';
+  } catch (error) {
+    if (getFileChatState(path).requestId !== requestId) return;
+    chat.error = error.message;
+  } finally {
+    if (getFileChatState(path).requestId !== requestId) return;
+    chat.loading = false;
+    renderOverviewChat(path);
+  }
+}
+
+function ensureOverviewGraphSelection(derived) {
+  const available = flattenFiles();
+  if (state.selectedOverviewGraphFile && available.some(file => file.path === state.selectedOverviewGraphFile)) {
+    return state.selectedOverviewGraphFile;
+  }
+  const fallback =
+    state.risk?.review_queue?.[0]?.path ||
+    derived.topHotspot?.path ||
+    derived.touchedFiles[0]?.path ||
+    available[0]?.path ||
+    null;
+  state.selectedOverviewGraphFile = fallback;
+  return fallback;
+}
+
+function buildOverviewFocusTargets(derived, selectedPath) {
+  const targets = [];
+  const seen = new Set();
+  const push = file => {
+    if (!file?.path || seen.has(file.path)) return;
+    seen.add(file.path);
+    targets.push(file);
+  };
+
+  if (selectedPath) {
+    push(fileSummary(selectedPath) || {
+      path: selectedPath,
+      impact_label: 'Selected from dependency graph',
+      edit_count: 0,
+    });
+  }
+  (state.risk?.review_queue || []).slice(0, 3).forEach(push);
+  derived.churnFiles.slice(0, 1).forEach(push);
+  derived.leafTouchedFiles.slice(0, 1).forEach(push);
+  derived.touchedFiles.slice(0, 1).forEach(push);
+  return targets.slice(0, 5);
+}
+
+function renderOverviewEditTrail(editHistory, filePath, limit = 5) {
+  const items = [...(editHistory || [])]
+    .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')))
+    .slice(0, limit);
+  if (!items.length) {
+    return '<div class="empty">No AI edit events are recorded for this file yet.</div>';
+  }
+  return `
+    <div class="dependency-list">
+      ${items.map(edit => `
+        <div class="dependency-item">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+            <div>
+              <span class="source-tag ${sourceBadge(edit.source)}">${esc(SOURCE_LABELS[edit.source] || edit.source)}</span>
+              <div class="tiny" style="margin-top:8px">${esc(edit.tool_name)} · round ${edit.round_num}</div>
+              ${edit.session_narrative ? `<div class="tiny" style="margin-top:6px">${esc(edit.session_narrative)}</div>` : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <span class="tiny">${esc(fmtRelative(edit.timestamp))}</span>
+              <button
+                class="btn subtle"
+                type="button"
+                data-open-trace-session="${escAttr(edit.session_id)}"
+                data-open-trace-round="${escAttr(edit.round_num)}"
+                data-open-trace-file="${escAttr(filePath)}"
+              >Open trace</button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function renderOverviewGraph(path) {
+  const mount = document.getElementById('overview-graph-mount');
+  const side = document.getElementById('overview-graph-side');
+  const foot = document.getElementById('overview-graph-foot');
+  if (!mount || !side || !foot) return;
+
+  if (!path) {
+    mount.innerHTML = '<div class="graph-empty">No file activity yet. Once AI edits land, this panel will show the dependency shape and editor history.</div>';
+    side.innerHTML = '<div class="empty">No file is selected for dependency watch.</div>';
+    foot.textContent = '';
+    return;
+  }
+
+  const requestKey = `${path}:${Date.now()}`;
+  mount.dataset.requestKey = requestKey;
+  side.dataset.requestKey = requestKey;
+  foot.dataset.requestKey = requestKey;
+  mount.innerHTML = '<div class="graph-empty">Loading dependency watch...</div>';
+  side.innerHTML = '<div class="empty">Loading editor history...</div>';
+  foot.textContent = 'Looking up graph neighbors and recorded AI edits...';
+
+  try {
+    const data = await fetchFileDetail(path);
+    const currentMount = document.getElementById('overview-graph-mount');
+    const currentSide = document.getElementById('overview-graph-side');
+    const currentFoot = document.getElementById('overview-graph-foot');
+    if (!currentMount || !currentSide || !currentFoot) return;
+    if (currentMount.dataset.requestKey !== requestKey || state.selectedOverviewGraphFile !== path) return;
+
+    const lastSource = data.last_edit?.source || data.edit_history?.[0]?.source || 'unknown';
+    const testLabel = data.has_obvious_test === true
+      ? 'Guarded'
+      : data.has_obvious_test === false
+        ? 'Missing test'
+        : 'No test signal';
+    const testHint = data.has_obvious_test === true
+      ? (data.test_paths?.[0] || 'Nearby test found')
+      : data.has_obvious_test === false
+        ? (data.test_paths?.[0] ? `Try ${data.test_paths[0]}` : 'No obvious nearby test')
+        : 'No nearby test hint for this file';
+    const signalRow = data.signals?.length
+      ? `<div class="signal-row" style="margin-top:12px">${data.signals.slice(0, 3).map(renderSignalChip).join('')}</div>`
+      : '';
+    const suggestedActions = data.recommended_actions?.length
+      ? `
+        <div class="focus-section">
+          <div class="detail-title">Suggested next move</div>
+          <div class="focus-actions">
+            ${data.recommended_actions.slice(0, 2).map(action => `<div class="focus-action">${esc(action)}</div>`).join('')}
+          </div>
+        </div>
+      `
+      : '';
+
+    currentSide.innerHTML = `
+      <div>
+        <div class="detail-title">Focus file</div>
+        <div class="path-line" style="font-size:14px;color:var(--text)">${esc(data.path)}</div>
+        <div class="watch-meta" style="margin-top:12px">
+          <span class="tier-tag ${toneClassFromTier(data.tier)}">T${data.tier}</span>
+          <span class="mini-chip">${esc(data.impact_label)}</span>
+          <span class="mini-chip">${data.blast_radius} downstream</span>
+        </div>
+        ${signalRow}
+      </div>
+
+      <div class="focus-kv">
+        <div class="focus-card">
+          <span class="focus-label">Last AI edit</span>
+          <strong>${esc(data.last_edit ? fmtRelative(data.last_edit.timestamp) : 'No edits')}</strong>
+          <div class="tiny">${esc(data.last_edit ? (SOURCE_LABELS[lastSource] || lastSource) : 'No recorded editor')}</div>
+        </div>
+        <div class="focus-card">
+          <span class="focus-label">Recorded edits</span>
+          <strong>${data.edit_history.length}</strong>
+          <div class="tiny">${data.edit_history.length === 1 ? 'Single edit event' : 'Edit events across sessions'}</div>
+        </div>
+        <div class="focus-card">
+          <span class="focus-label">Dependency reach</span>
+          <strong>${data.direct_imported_by.length}</strong>
+          <div class="tiny">${data.direct_imported_by.length === 1 ? 'Direct dependent' : 'Direct dependents'}</div>
+        </div>
+        <div class="focus-card">
+          <span class="focus-label">Test posture</span>
+          <strong>${esc(testLabel)}</strong>
+          <div class="tiny">${esc(testHint)}</div>
+        </div>
+      </div>
+
+      <div class="focus-section">
+        <div class="detail-title">By editor</div>
+        ${renderSourceHistorySummary(data.edit_history)}
+      </div>
+
+      <div class="focus-section">
+        <div class="history-head">
+          <div class="detail-title" style="margin-bottom:0">Recent AI trail</div>
+          <div class="tiny">${data.edit_history.length ? `${Math.min(data.edit_history.length, 5)} of ${data.edit_history.length}` : 'No edits yet'}</div>
+        </div>
+        ${renderOverviewEditTrail(data.edit_history, data.path)}
+      </div>
+
+      ${suggestedActions}
+
+      <div class="focus-section">
+        <div class="detail-title">Ask monitor AI</div>
+        <div id="overview-chat-mount"></div>
+      </div>
+    `;
+
+    mountDependencyGraph(currentMount, data, {
+      onNodeOpen: nodeId => {
+        state.selectedOverviewGraphFile = nodeId;
+        renderOverview(computeDerived());
+      },
+      onNodeTraceOpen: nodeId => openLatestTraceForFile(nodeId, data),
+    });
+    renderOverviewChat(data.path);
+    currentFoot.textContent = `Showing up to 6 imports and 6 dependents. ${data.direct_imports.length > 6 ? `${data.direct_imports.length - 6} more imports are available in File Radar. ` : ''}${data.direct_imported_by.length > 6 ? `${data.direct_imported_by.length - 6} more dependents are available in File Radar.` : ''}`.trim();
+  } catch (error) {
+    const currentMount = document.getElementById('overview-graph-mount');
+    const currentSide = document.getElementById('overview-graph-side');
+    const currentFoot = document.getElementById('overview-graph-foot');
+    if (!currentMount || !currentSide || !currentFoot) return;
+    if (currentMount.dataset.requestKey !== requestKey) return;
+    currentMount.innerHTML = `<div class="graph-empty">${esc(error.message)}</div>`;
+    currentSide.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+    currentFoot.textContent = '';
+  }
+}
+
+function renderOverview(derived) {
+  const tone = healthTone(state.risk?.health || 'green');
+  const topHotspotText = derived.topHotspot ? derived.topHotspot.path : 'No file is drawing extra attention right now.';
+  const focusPath = ensureOverviewGraphSelection(derived);
+  const focusTargets = buildOverviewFocusTargets(derived, focusPath);
+  const root = document.getElementById('overview-root');
+  const watchItems = state.risk?.review_queue?.length
+    ? state.risk.review_queue.slice(0, 3).map(file => renderPointItem(file.path, file.impact_label)).join('')
+    : `<div class="empty">Nothing is in the review queue. Recent AI edits are staying inside low-blast parts of the repo.</div>`;
+  const activityItems = derived.sessions.length
+    ? derived.sessions.slice(0, 3).map(session => renderSessionPoint(session)).join('')
+    : `<div class="empty">No sessions have been captured yet. Session Replay will fill in as soon as the agent starts working.</div>`;
+  const actionCards = derived.actionItems.length
+    ? derived.actionItems.slice(0, 2).map(item => renderActionCard(item)).join('')
+    : `<div class="action-empty">No immediate action item is jumping out. That usually means the recent AI changes stayed small and contained.</div>`;
+  const safeItems = derived.leafTouchedFiles.length
+    ? derived.leafTouchedFiles.slice(0, 2).map(file => renderPointItem(file.path, file.edit_count === 1 ? 'single touch' : `${file.edit_count} touches`)).join('')
+    : '<div class="tiny">No clear safe sandbox file is active right now.</div>';
+
+  root.innerHTML = `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="hero-card">
+        <div class="score-ring" style="--score:${derived.score};--tone:${tone}">
+          <div class="score-core">
+            <div class="score-value">${derived.score}</div>
+            <div class="score-label">Control</div>
+          </div>
+        </div>
+        <div class="hero-copy">
+          <span class="hero-badge"><span class="dot ${state.risk?.health || 'green'}"></span>${esc(derived.scoreLabel)}</span>
+          <h2>${esc(state.risk?.verdict || 'Monitor is warming up.')}</h2>
+          <p>${esc(derived.reasons[0])}</p>
+          <div class="pill-row">
+            <span class="info-pill">${state.risk?.sessions_with_edits || 0} sessions changed code</span>
+            <span class="info-pill">${state.risk?.review_queue?.length || 0} files to inspect</span>
+            <span class="info-pill">${derived.actionCounts.quiet_core || 0} quiet shared/core</span>
+            <span class="info-pill">${derived.actionCounts.test_gap || 0} test gaps</span>
+          </div>
+          <div class="metric-note"><strong>${esc(topHotspotText)}</strong><br>Use File Radar for the full dependency view and Session Replay for the broad multi-file sessions.</div>
+          <div class="hero-actions">
+            <button class="btn" type="button" data-tab-target="files">Open file radar</button>
+            <button class="btn subtle" type="button" data-tab-target="sessions">Open session replay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-grid">
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Action Center</div>
+              <div class="panel-sub">The top actions right now. The detailed analytics live in the other tabs.</div>
+            </div>
+            <button class="btn subtle" type="button" data-tab-target="files">Go to file radar</button>
+          </div>
+          <div class="action-grid">${actionCards}</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">At A Glance</div>
+              <div class="panel-sub">What to review next, which sessions were broad, and where it is still safe to keep iterating.</div>
+            </div>
+          </div>
+          <div class="key-points">
+            <div class="point">
+              <h4>Review next</h4>
+              <p>${derived.actionCounts.quiet_core ? 'Quiet shared/core files changed, so start with those.' : 'Nothing especially quiet-and-critical is active right now.'}</p>
+              <div class="point-list">${watchItems}</div>
+            </div>
+            <div class="point">
+              <h4>Recent sessions</h4>
+              <p>Replay these to recover intent. Chat-only Cursor and Codex runs stay visible even when they did not edit files.</p>
+              <div class="point-list">${activityItems}</div>
+            </div>
+            <div class="point">
+              <h4>Safe to keep moving</h4>
+              <p>Use leaf files as your sandbox before you push behavior up into shared code.</p>
+              <div class="point-list">${safeItems}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-inner">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Dependency Watch</div>
+            <div class="panel-sub">Pick one file and inspect the local dependency shape plus which AI editor has been changing it.</div>
+          </div>
+          ${focusPath ? `<button class="btn subtle" type="button" data-open-file="${escAttr(focusPath)}">Open in file radar</button>` : ''}
+        </div>
+        ${focusTargets.length ? `
+          <div class="focus-targets">
+            ${focusTargets.map(file => `
+              <button class="focus-target ${file.path === focusPath ? 'active' : ''}" type="button" data-overview-graph-file="${escAttr(file.path)}">
+                <span class="mono">${esc(shortPath(file.path, 3))}</span>
+                <span class="tiny">${file.edit_count ? `${file.edit_count} AI touch${file.edit_count === 1 ? '' : 'es'}` : 'Graph file'}</span>
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="overview-focus">
+          <div>
+            <div class="graph-note">Drag nodes to untangle the graph. Use the zoom controls or wheel to inspect crowded areas. Click a node once to focus it here; click the selected node again to jump to its latest trace.</div>
+            <div class="graph-legend">
+              <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(104,214,255,.8)"></span>Selected file</span>
+              <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(90,187,255,.8)"></span>Direct imports</span>
+              <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(255,191,95,.8)"></span>Direct dependents</span>
+            </div>
+            <div class="graph-shell">
+              <div id="overview-graph-mount"></div>
+            </div>
+            <div class="graph-foot" id="overview-graph-foot"></div>
+          </div>
+          <div class="focus-side" id="overview-graph-side"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  renderOverviewGraph(focusPath);
+}
+
+function renderWatchItem(file) {
+  const toneClass = toneClassFromTier(file.tier);
+  const fill = Math.min(100, Math.max(14, Math.round((file.risk_score || 0) * 180)));
+  const signals = file.signals?.length
+    ? `<div class="signal-row">${file.signals.slice(0, 2).map(renderSignalChip).join('')}</div>`
+    : '';
+  return `
+    <div class="watch-item">
+      <div class="watch-top">
+        <div style="flex:1;min-width:0">
+          <div class="path-line clickable" data-open-file="${escAttr(file.path)}">${esc(file.path)}</div>
+          <div class="muted" style="margin-top:6px;font-size:13px">${esc(file.impact_label)}</div>
+          ${signals}
+        </div>
+        <span class="tier-tag ${toneClass}">T${file.tier}</span>
+      </div>
+      <div class="watch-meta">
+        <span class="mini-chip">${file.edit_count} session${file.edit_count === 1 ? '' : 's'}</span>
+        <span class="mini-chip">Last touched ${esc(fmtRelative(file.last_editor?.timestamp))}</span>
+        <span class="mini-chip ${sourceBadge(file.last_editor?.source || 'codex')}">${esc(SOURCE_LABELS[file.last_editor?.source] || (file.last_editor?.source || 'unknown'))}</span>
+      </div>
+      <div class="micro-bar"><div class="micro-fill" style="width:${fill}%;--tone:${tierTone(file.tier)}"></div></div>
+    </div>
+  `;
+}
+
+function renderActivityItem(session) {
+  const widePass = session.files_edited.length >= 8 ? '<span class="mini-chip tone-yellow">wide pass</span>' : '';
+  return `
+    <div class="activity-item" style="padding:15px">
+      <div class="activity-top">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px">
+            <span class="risk-tag ${toneClassFromRisk(session.risk_level)}">${esc(session.risk_level)} risk</span>
+            <span class="source-tag ${sourceBadge(session.source)}">${esc(SOURCE_LABELS[session.source] || session.source)}</span>
+            <span class="tiny">${esc(fmtRelative(session.timestamp))}</span>
+          </div>
+          <div class="muted" style="font-size:13px;line-height:1.5">${esc(session.narrative)}</div>
+          <div class="activity-meta">
+            <span class="mini-chip">${session.files_edited.length} files</span>
+            <span class="mini-chip">${session.num_rounds} rounds</span>
+            <span class="mini-chip">${esc(session.scope_label)}</span>
+            ${widePass}
+          </div>
+        </div>
+        <button class="btn subtle" type="button" data-open-session="${escAttr(session.session_id)}">Replay</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderStackRow(label, value, maxValue, color, numericValue) {
+  const rawValue = numericValue ?? value;
+  const parsedValue = typeof rawValue === 'number' ? rawValue : Number.parseFloat(rawValue) || 0;
+  const width = Math.max(10, Math.round(parsedValue / Math.max(1, maxValue) * 100));
+  return `
+    <div class="stack-row">
+      <div>
+        <div class="stack-label"><span>${esc(label)}</span><span>${esc(String(value))}</span></div>
+        <div class="stack-track"><div class="stack-fill" style="width:${width}%;background:${color}"></div></div>
+      </div>
+      <span class="tiny">${typeof rawValue === 'number' ? rawValue : ''}</span>
+    </div>
+  `;
+}
+
+function renderPointItem(path, note) {
+  return `
+    <div class="point-item">
+      <span class="clickable" data-open-file="${escAttr(path)}">${esc(path)}</span>
+      <span>${esc(note)}</span>
+    </div>
+  `;
+}
+
+function renderSignalChip(signal) {
+  return `
+    <span class="signal-chip ${toneClassFromName(signal.tone)}" title="${escAttr(signal.reason || '')}">
+      <span class="signal-dot"></span>${esc(signal.label)}
+    </span>
+  `;
+}
+
+function shortPath(path, keep = 2) {
+  const parts = String(path || '').split('/').filter(Boolean);
+  if (parts.length <= keep) return path;
+  return `.../${parts.slice(-keep).join('/')}`;
+}
+
+function fileSummary(path) {
+  return flattenFiles().find(file => file.path === path) || null;
+}
+
+function summarizeEditSources(editHistory) {
+  const buckets = new Map();
+  editHistory.forEach(edit => {
+    const source = edit.source || 'unknown';
+    const bucket = buckets.get(source) || {source, count: 0, lastTimestamp: null};
+    bucket.count += 1;
+    if (!bucket.lastTimestamp || (edit.timestamp || '') > bucket.lastTimestamp) {
+      bucket.lastTimestamp = edit.timestamp || bucket.lastTimestamp;
+    }
+    buckets.set(source, bucket);
+  });
+  return [...buckets.values()].sort((a, b) => (b.count - a.count) || String(b.lastTimestamp || '').localeCompare(String(a.lastTimestamp || '')));
+}
+
+function renderSourceHistorySummary(editHistory) {
+  const buckets = summarizeEditSources(editHistory);
+  if (!buckets.length) {
+    return '<div class="empty">No AI editor has touched this file yet.</div>';
+  }
+  return `
+    <div class="editor-strip">
+      ${buckets.map(bucket => `
+        <div class="editor-card">
+          <span class="source-tag ${sourceBadge(bucket.source)}">${esc(SOURCE_LABELS[bucket.source] || bucket.source)}</span>
+          <strong>${bucket.count}</strong>
+          <div class="tiny">${bucket.count === 1 ? 'edit event' : 'edit events'} · ${esc(fmtRelative(bucket.lastTimestamp))}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function buildDependencyGraphModel(data) {
+  const imports = data.direct_imports.slice(0, 6);
+  const dependents = data.direct_imported_by.slice(0, 6);
+  const height = 340;
+  const width = 560;
+  const nodes = [{
+    id: data.path,
+    kind: 'focus',
+    x: width / 2,
+    y: height / 2,
+    width: 170,
+    height: 56,
+    tier: data.tier,
+    editCount: data.edit_count,
+    label: shortPath(data.path, 3),
+    meta: `${data.edit_count} AI touch${data.edit_count === 1 ? '' : 'es'}`,
+  }];
+  const edges = [];
+
+  const spread = (index, total, minY = 56, maxY = height - 56) => {
+    if (total <= 1) return height / 2;
+    return minY + ((maxY - minY) * index / (total - 1));
+  };
+
+  imports.forEach((path, index) => {
+    const meta = fileSummary(path);
+    nodes.push({
+      id: path,
+      kind: 'import',
+      x: 132 + ((index % 2) * 10),
+      y: spread(index, imports.length),
+      width: 148,
+      height: 48,
+      tier: meta?.tier || null,
+      editCount: meta?.edit_count || 0,
+      label: shortPath(path),
+      meta: meta?.edit_count ? `${meta.edit_count} AI touch${meta.edit_count === 1 ? '' : 'es'}` : 'Imported dependency',
+    });
+    edges.push({source: path, target: data.path});
+  });
+
+  dependents.forEach((path, index) => {
+    const meta = fileSummary(path);
+    nodes.push({
+      id: path,
+      kind: 'dependent',
+      x: width - 132 - ((index % 2) * 10),
+      y: spread(index, dependents.length),
+      width: 148,
+      height: 48,
+      tier: meta?.tier || null,
+      editCount: meta?.edit_count || 0,
+      label: shortPath(path),
+      meta: meta?.edit_count ? `${meta.edit_count} AI touch${meta.edit_count === 1 ? '' : 'es'}` : 'Depends on this file',
+    });
+    edges.push({source: data.path, target: path});
+  });
+
+  return {
+    width,
+    height,
+    nodes,
+    edges,
+    importOverflow: Math.max(0, data.direct_imports.length - imports.length),
+    dependentOverflow: Math.max(0, data.direct_imported_by.length - dependents.length),
+  };
+}
+
+function graphNodePalette(node) {
+  if (node.kind === 'focus') {
+    return {
+      fill: 'rgba(104,214,255,.18)',
+      stroke: 'rgba(104,214,255,.62)',
+      accent: tierTone(node.tier),
+    };
+  }
+  if (node.kind === 'import') {
+    return {
+      fill: 'rgba(90,187,255,.12)',
+      stroke: 'rgba(90,187,255,.42)',
+      accent: node.editCount ? 'var(--blue)' : 'rgba(145,177,196,.6)',
+    };
+  }
+  return {
+    fill: 'rgba(255,191,95,.12)',
+    stroke: 'rgba(255,191,95,.42)',
+    accent: node.editCount ? 'var(--yellow)' : 'rgba(145,177,196,.6)',
+  };
+}
+
+function mountDependencyGraph(container, data, {onNodeOpen, onNodeTraceOpen} = {}) {
+  if (!container) return;
+  if (!data.direct_imports.length && !data.direct_imported_by.length) {
+    container.innerHTML = '<div class="graph-empty">This file has no direct imports or direct dependents in the project graph yet.</div>';
+    return;
+  }
+  const openNode = onNodeOpen || (nodeId => showFileDetail(nodeId));
+  const openTraceNode = onNodeTraceOpen || (nodeId => openLatestTraceForFile(nodeId, data));
+
+  const graph = buildDependencyGraphModel(data);
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'dependency-graph');
+  svg.setAttribute('viewBox', `0 0 ${graph.width} ${graph.height}`);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', `Dependency graph for ${data.path}`);
+
+  const filterId = `graphGlow-${Math.random().toString(36).slice(2, 9)}`;
+  const defs = document.createElementNS(ns, 'defs');
+  defs.innerHTML = `
+    <filter id="${filterId}" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="rgba(0,0,0,.42)"/>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  const edgeLayer = document.createElementNS(ns, 'g');
+  const nodeLayer = document.createElementNS(ns, 'g');
+  svg.appendChild(edgeLayer);
+  svg.appendChild(nodeLayer);
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'graph-toolbar';
+  const toolGroup = document.createElement('div');
+  toolGroup.className = 'graph-toolgroup';
+  const zoomOut = document.createElement('button');
+  zoomOut.type = 'button';
+  zoomOut.className = 'graph-toolbtn';
+  zoomOut.textContent = '-';
+  const zoomReset = document.createElement('button');
+  zoomReset.type = 'button';
+  zoomReset.className = 'graph-toolbtn';
+  zoomReset.textContent = 'Reset';
+  const zoomIn = document.createElement('button');
+  zoomIn.type = 'button';
+  zoomIn.className = 'graph-toolbtn';
+  zoomIn.textContent = '+';
+  toolGroup.append(zoomOut, zoomReset, zoomIn);
+  const zoomLabel = document.createElement('span');
+  zoomLabel.className = 'graph-zoom';
+  toolbar.append(toolGroup, zoomLabel);
+
+  container.innerHTML = '';
+  container.append(toolbar, svg);
+
+  const nodeIndex = new Map(graph.nodes.map(node => [node.id, node]));
+  const edgeEls = graph.edges.map(edge => {
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('stroke', 'rgba(145,177,196,.28)');
+    line.setAttribute('stroke-width', edge.source === data.path || edge.target === data.path ? '2.4' : '1.6');
+    line.setAttribute('stroke-linecap', 'round');
+    edgeLayer.appendChild(line);
+    return {edge, line};
+  });
+
+  graph.nodes.forEach(node => {
+    const palette = graphNodePalette(node);
+    const group = document.createElementNS(ns, 'g');
+    group.style.cursor = 'grab';
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('rx', node.kind === 'focus' ? '18' : '16');
+    rect.setAttribute('ry', node.kind === 'focus' ? '18' : '16');
+    rect.setAttribute('width', String(node.width));
+    rect.setAttribute('height', String(node.height));
+    rect.setAttribute('fill', palette.fill);
+    rect.setAttribute('stroke', palette.stroke);
+    rect.setAttribute('stroke-width', node.kind === 'focus' ? '1.8' : '1.2');
+    rect.setAttribute('filter', `url(#${filterId})`);
+
+    const accent = document.createElementNS(ns, 'rect');
+    accent.setAttribute('x', '10');
+    accent.setAttribute('y', String(node.height - 8));
+    accent.setAttribute('width', String(Math.max(34, Math.min(node.width - 20, 28 + (node.editCount * 12)))));
+    accent.setAttribute('height', '4');
+    accent.setAttribute('rx', '4');
+    accent.setAttribute('fill', palette.accent);
+    accent.setAttribute('opacity', '.95');
+
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', String(node.width / 2));
+    label.setAttribute('y', node.kind === 'focus' ? '21' : '19');
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('fill', 'var(--text)');
+    label.setAttribute('font-size', node.kind === 'focus' ? '12.5' : '11.5');
+    label.setAttribute('font-weight', '600');
+    label.textContent = node.label;
+
+    const meta = document.createElementNS(ns, 'text');
+    meta.setAttribute('x', String(node.width / 2));
+    meta.setAttribute('y', node.kind === 'focus' ? '39' : '35');
+    meta.setAttribute('text-anchor', 'middle');
+    meta.setAttribute('fill', 'var(--text-dim)');
+    meta.setAttribute('font-size', '10.5');
+    meta.textContent = node.meta;
+
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = `${node.id} — ${node.meta}`;
+
+    group.append(rect, accent, label, meta, title);
+    node.group = group;
+    nodeLayer.appendChild(group);
+  });
+
+  function positionNode(node) {
+    node.group.setAttribute('transform', `translate(${node.x - node.width / 2} ${node.y - node.height / 2})`);
+  }
+
+  function drawEdges() {
+    edgeEls.forEach(({edge, line}) => {
+      const source = nodeIndex.get(edge.source);
+      const target = nodeIndex.get(edge.target);
+      if (!source || !target) return;
+      line.setAttribute('x1', String(source.x));
+      line.setAttribute('y1', String(source.y));
+      line.setAttribute('x2', String(target.x));
+      line.setAttribute('y2', String(target.y));
+    });
+  }
+
+  graph.nodes.forEach(positionNode);
+  drawEdges();
+
+  let drag = null;
+  let zoom = 1;
+  let viewBox = {x: 0, y: 0, width: graph.width, height: graph.height};
+
+  function clampViewBox(nextView) {
+    const width = Math.max(graph.width / 2.6, Math.min(graph.width, nextView.width));
+    const height = Math.max(graph.height / 2.6, Math.min(graph.height, nextView.height));
+    const maxX = Math.max(0, graph.width - width);
+    const maxY = Math.max(0, graph.height - height);
+    return {
+      x: Math.max(0, Math.min(maxX, nextView.x)),
+      y: Math.max(0, Math.min(maxY, nextView.y)),
+      width,
+      height,
+    };
+  }
+
+  function applyViewBox() {
+    svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+    zoomLabel.textContent = `${Math.round(zoom * 100)}% zoom`;
+  }
+
+  const toPoint = event => {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: viewBox.x + ((event.clientX - rect.left) / rect.width) * viewBox.width,
+      y: viewBox.y + ((event.clientY - rect.top) / rect.height) * viewBox.height,
+    };
+  };
+
+  function zoomAt(nextZoom, centerX = viewBox.x + viewBox.width / 2, centerY = viewBox.y + viewBox.height / 2) {
+    const clamped = Math.max(1, Math.min(2.6, nextZoom));
+    const relativeX = (centerX - viewBox.x) / viewBox.width;
+    const relativeY = (centerY - viewBox.y) / viewBox.height;
+    const nextWidth = graph.width / clamped;
+    const nextHeight = graph.height / clamped;
+    zoom = clamped;
+    viewBox = clampViewBox({
+      x: centerX - (relativeX * nextWidth),
+      y: centerY - (relativeY * nextHeight),
+      width: nextWidth,
+      height: nextHeight,
+    });
+    applyViewBox();
+  }
+
+  zoomOut.addEventListener('click', () => zoomAt(zoom / 1.2));
+  zoomIn.addEventListener('click', () => zoomAt(zoom * 1.2));
+  zoomReset.addEventListener('click', () => {
+    zoom = 1;
+    viewBox = {x: 0, y: 0, width: graph.width, height: graph.height};
+    applyViewBox();
+  });
+
+  svg.addEventListener('wheel', event => {
+    event.preventDefault();
+    const point = toPoint(event);
+    zoomAt(event.deltaY < 0 ? zoom * 1.12 : zoom / 1.12, point.x, point.y);
+  }, {passive: false});
+
+  graph.nodes.forEach(node => {
+    node.group.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      const point = toPoint(event);
+      drag = {
+        node,
+        pointerId: event.pointerId,
+        offsetX: point.x - node.x,
+        offsetY: point.y - node.y,
+        startX: point.x,
+        startY: point.y,
+        moved: false,
+      };
+      svg.setPointerCapture(event.pointerId);
+      node.group.style.cursor = 'grabbing';
+    });
+  });
+
+  svg.addEventListener('pointermove', event => {
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const point = toPoint(event);
+    if (Math.abs(point.x - drag.startX) > 2 || Math.abs(point.y - drag.startY) > 2) {
+      drag.moved = true;
+    }
+    drag.node.x = Math.max(drag.node.width / 2, Math.min(graph.width - drag.node.width / 2, point.x - drag.offsetX));
+    drag.node.y = Math.max(drag.node.height / 2, Math.min(graph.height - drag.node.height / 2, point.y - drag.offsetY));
+    positionNode(drag.node);
+    drawEdges();
+  });
+
+  const finishDrag = event => {
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const active = drag;
+    svg.releasePointerCapture(event.pointerId);
+    active.node.group.style.cursor = 'grab';
+    drag = null;
+    if (!active.moved) {
+      if (active.node.id === data.path && data.edit_history?.length) {
+        openTraceNode(active.node.id);
+      } else {
+        openNode(active.node.id);
+      }
+    }
+  };
+
+  svg.addEventListener('pointerup', finishDrag);
+  svg.addEventListener('pointercancel', finishDrag);
+  applyViewBox();
+}
+
+function renderActionCard(item) {
+  const tone = item.severity === 'urgent' ? 'var(--red)' : item.severity === 'attention' ? 'var(--yellow)' : 'var(--green)';
+  const fileLines = item.files?.length
+    ? item.files.map(file => `
+        <div class="action-line">
+          <span class="clickable" data-open-file="${escAttr(file.path)}">${esc(file.path)}</span>
+          <span>${esc(file.label)}</span>
+        </div>
+      `).join('')
+    : '';
+  const sessionLines = item.sessions?.length
+    ? item.sessions.map(session => `
+        <div class="action-line">
+          <span class="clickable" data-open-session="${escAttr(session.session_id)}">${esc((SOURCE_LABELS[session.source] || session.source) + ' session')}</span>
+          <span>${session.files_edited} files</span>
+        </div>
+      `).join('')
+    : '';
+  return `
+    <div class="action-card" style="--tone:${tone}">
+      <div class="action-head">
+        <div>
+          <div class="mini-label">${esc(item.type.replaceAll('-', ' '))}</div>
+          <h4>${esc(item.title)}</h4>
+        </div>
+        <span class="severity-badge ${severityClass(item.severity)}">${esc(severityLabel(item.severity))}</span>
+      </div>
+      <div class="action-copy">${esc(item.summary)}</div>
+      <div class="action-copy">${esc(item.rationale)}</div>
+      ${fileLines ? `<div class="action-files">${fileLines}</div>` : ''}
+      ${sessionLines ? `<div class="action-files">${sessionLines}</div>` : ''}
+      <div class="action-steps">
+        ${item.steps.map(step => `<div class="action-line"><span>${esc(step)}</span></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderFiles(derived) {
+  const sortToolbar = document.getElementById('sort-toolbar');
+  const sortOptions = [
+    ['risk', 'Sort by risk'],
+    ['edits', 'Sort by edits'],
+    ['blast', 'Sort by blast'],
+    ['loc', 'Sort by size'],
+    ['path', 'Sort by path'],
+  ];
+  sortToolbar.innerHTML = sortOptions.map(([value, label]) => `
+    <button class="btn subtle ${state.fileSort === value ? 'active' : ''}" type="button" data-file-sort="${value}">${label}</button>
+  `).join('');
+  document.querySelectorAll('[data-files-scope]').forEach(button => {
+    button.classList.toggle('active', button.dataset.filesScope === state.filesScope);
+  });
+
+  const tierStrip = document.getElementById('tier-strip');
+  tierStrip.innerHTML = state.health.tiers.map(tier => `
+    <div class="panel tier-card ${state.selectedTier === tier.tier ? 'active' : ''}" data-tier-filter="${tier.tier}">
+      <h3 style="color:${tierTone(tier.tier)}">Tier ${tier.tier} · ${esc(tier.label)}</h3>
+      <div class="big">${tier.file_count}</div>
+      <div class="tier-meta">
+        <span>${tier.edited_file_count} touched by AI</span>
+        <span>${tier.edit_count} total session touches</span>
+        <span>${tier.edit_pct}% of edit pressure</span>
+      </div>
+    </div>
+  `).join('');
+
+  const search = (document.getElementById('file-search').value || '').trim().toLowerCase();
+  const compare = {
+    risk: (a, b) => (b.risk_score - a.risk_score) || (b.edit_count - a.edit_count),
+    edits: (a, b) => (b.edit_count - a.edit_count) || (b.risk_score - a.risk_score),
+    blast: (a, b) => (b.blast_radius - a.blast_radius) || (b.risk_score - a.risk_score),
+    loc: (a, b) => (b.loc - a.loc) || (b.risk_score - a.risk_score),
+    path: (a, b) => a.path.localeCompare(b.path),
+  }[state.fileSort];
+
+  const list = document.getElementById('file-list');
+  const groups = [];
+  state.health.tiers.forEach(tier => {
+    if (state.selectedTier !== null && tier.tier !== state.selectedTier) return;
+    let files = tier.files.map(file => ({
+      ...file,
+      tier: tier.tier,
+      tier_label: tier.label,
+      tier_description: tier.description,
+    }));
+    if (state.filesScope === 'touched') files = files.filter(file => file.edit_count > 0);
+    if (search) files = files.filter(file => file.path.toLowerCase().includes(search));
+    files = files.sort(compare);
+    if (!files.length) return;
+    groups.push({tier, files});
+  });
+
+  if (!groups.length) {
+    list.innerHTML = `<div class="empty">No files match the current filters. Try switching from touched files to all graph files, or clear the search.</div>`;
+  } else {
+    list.innerHTML = groups.map(group => `
+      <div class="file-group">
+        <div class="group-head">
+          <h3 style="color:${tierTone(group.tier.tier)}">Tier ${group.tier.tier} · ${esc(group.tier.label)}</h3>
+          <span>${esc(group.tier.description)}</span>
+        </div>
+        ${group.files.map(file => `
+          <div class="file-row ${state.selectedFile === file.path ? 'active' : ''}" data-show-file="${escAttr(file.path)}">
+            <div class="file-main">
+              <div class="path-line file-path">${esc(file.path)}</div>
+              <div class="file-meta">
+                <span class="mini-chip">${file.edit_count} session${file.edit_count === 1 ? '' : 's'}</span>
+                <span class="mini-chip">${file.blast_radius} downstream files</span>
+                <span class="mini-chip">${file.loc} LOC</span>
+              </div>
+              ${file.signals?.length ? `<div class="signal-row file-signals">${file.signals.slice(0, 3).map(renderSignalChip).join('')}</div>` : ''}
+            </div>
+            <span class="tier-tag ${toneClassFromTier(file.tier)}">T${file.tier}</span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  }
+
+  if (!state.selectedFile) {
+    const firstFile = groups.flatMap(group => group.files)[0];
+    if (firstFile) {
+      state.selectedFile = firstFile.path;
+      showFileDetail(firstFile.path);
+      return;
+    }
+  }
+
+  if (!state.selectedFile) {
+    document.getElementById('file-detail').innerHTML = `<div class="empty">Choose a file to inspect its blast radius, dependency surface, and edit history.</div>`;
+  }
+}
+
+async function showFileDetail(path) {
+  state.selectedFile = path;
+  document.querySelectorAll('[data-show-file]').forEach(row => row.classList.toggle('active', row.dataset.showFile === path));
+  const detail = document.getElementById('file-detail');
+  detail.innerHTML = `<div class="empty">Loading file detail...</div>`;
+  try {
+    const data = await fetchFileDetail(path);
+    const tone = tierTone(data.tier);
+    const signalsHtml = data.signals?.length
+      ? `
+        <div class="signal-list">
+          ${data.signals.map(signal => `
+            <div class="signal-panel ${toneClassFromName(signal.tone)}">
+              <h4>${esc(signal.label)}</h4>
+              <p>${esc(signal.reason)}</p>
+            </div>
+          `).join('')}
+        </div>
+      `
+      : '<div class="empty">No special guidance flags on this file right now.</div>';
+    const recommendedActions = data.recommended_actions?.length
+      ? `
+        <ul class="detail-actions">
+          ${data.recommended_actions.map(action => `<li>${esc(action)}</li>`).join('')}
+        </ul>
+      `
+      : '<div class="empty">No extra handling advice for this file right now.</div>';
+    const sourceHistorySummary = renderSourceHistorySummary(data.edit_history);
+    const testStatus = data.has_obvious_test === true
+      ? `<span class="test-pill tone-green">Nearby test found${data.test_paths?.length ? ` · ${esc(data.test_paths[0])}` : ''}</span>`
+      : data.has_obvious_test === false
+        ? `<span class="test-pill tone-yellow">No obvious nearby test${data.test_paths?.length ? ` · try ${esc(data.test_paths[0])}` : ''}</span>`
+        : `<span class="test-pill tone-blue">Test hint not applicable</span>`;
+    detail.innerHTML = `
+      <div>
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+          <div>
+            <div class="detail-title">File focus</div>
+            <div class="path-line" style="font-size:14px;color:var(--text)">${esc(data.path)}</div>
+            <div class="muted" style="margin-top:8px">${esc(data.tier_description)}</div>
+          </div>
+          <span class="tier-tag ${toneClassFromTier(data.tier)}">Tier ${data.tier}</span>
+        </div>
+        <div class="detail-section">
+          <div class="detail-title">What this means</div>
+          <div class="kv"><span class="k">Impact</span><span style="color:${tone}">${esc(data.impact_label)}</span></div>
+          <div class="kv"><span class="k">Blast radius</span><span>${data.blast_radius} files</span></div>
+          <div class="kv"><span class="k">Edit sessions</span><span>${data.edit_count}</span></div>
+          <div class="kv"><span class="k">Risk score</span><span>${data.risk_score.toFixed(2)}</span></div>
+          <div class="kv"><span class="k">Size</span><span>${data.loc} LOC</span></div>
+          <div class="kv"><span class="k">Last edited</span><span>${esc(data.last_edit ? fmtTime(data.last_edit.timestamp) : 'No AI edits recorded')}</span></div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Why this deserves care</div>
+          <div class="detail-grid">
+            ${testStatus}
+            ${signalsHtml}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Suggested next moves</div>
+          ${recommendedActions}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Dependency map</div>
+          <div class="graph-note">Drag nodes to untangle the graph. Use the zoom controls or wheel to inspect the graph. Click a node once to focus that file; click the selected node again to jump into its latest trace.</div>
+          <div class="graph-legend">
+            <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(104,214,255,.8)"></span>Selected file</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(90,187,255,.8)"></span>Direct imports</span>
+            <span class="graph-legend-item"><span class="graph-dot" style="background:rgba(255,191,95,.8)"></span>Direct dependents</span>
+          </div>
+          <div class="graph-shell">
+            <div id="file-graph-mount"></div>
+          </div>
+          <div class="graph-foot">
+            Showing up to 6 imports and 6 dependents.
+            ${data.direct_imports.length > 6 ? `${data.direct_imports.length - 6} more imports are listed below. ` : ''}
+            ${data.direct_imported_by.length > 6 ? `${data.direct_imported_by.length - 6} more dependents are listed below.` : ''}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">By editor</div>
+          ${sourceHistorySummary}
+        </div>
+
+        <div class="detail-section">
+          <div class="history-head">
+            <div class="detail-title" style="margin-bottom:0">AI edit history</div>
+            <div class="tiny">${data.edit_history.length ? `${data.edit_history.length} recorded edit event${data.edit_history.length === 1 ? '' : 's'}` : 'No edit events yet'}</div>
+          </div>
+          ${data.edit_history.length ? `
+            <div class="dependency-list">
+              ${data.edit_history.slice(0, 12).map(edit => `
+                <div class="dependency-item">
+                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:6px">
+                    <div>
+                      <span class="source-tag ${sourceBadge(edit.source)}">${esc(SOURCE_LABELS[edit.source] || edit.source)}</span>
+                      <div class="tiny" style="margin-top:6px">${esc(edit.tool_name)} in round ${edit.round_num}</div>
+                      ${edit.session_narrative ? `<div class="tiny" style="margin-top:6px">${esc(edit.session_narrative)}</div>` : ''}
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                      <span class="tiny">${esc(fmtTime(edit.timestamp))}</span>
+                      <button
+                        class="btn subtle"
+                        type="button"
+                        data-open-trace-session="${escAttr(edit.session_id)}"
+                        data-open-trace-round="${escAttr(edit.round_num)}"
+                        data-open-trace-file="${escAttr(data.path)}"
+                      >Open trace</button>
+                    </div>
+                  </div>
+                  ${edit.user_message_preview ? `<div class="tiny">${esc(edit.user_message_preview)}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : '<div class="empty">This file is in the graph, but no AI edit events have touched it yet.</div>'}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Direct dependents</div>
+          ${data.direct_imported_by.length ? `
+            <div class="dependency-list">
+              ${data.direct_imported_by.map(dep => `<div class="dependency-item clickable" data-open-file="${escAttr(dep)}">${esc(dep)}</div>`).join('')}
+            </div>
+          ` : '<div class="empty">Nothing imports this file directly.</div>'}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Direct imports</div>
+          ${data.direct_imports.length ? `
+            <div class="dependency-list">
+              ${data.direct_imports.map(dep => `<div class="dependency-item clickable" data-open-file="${escAttr(dep)}">${esc(dep)}</div>`).join('')}
+            </div>
+          ` : '<div class="empty">This file does not import anything else in the graph.</div>'}
+        </div>
+      </div>
+    `;
+    mountDependencyGraph(document.getElementById('file-graph-mount'), data, {
+      onNodeTraceOpen: nodeId => openLatestTraceForFile(nodeId, data),
+    });
+  } catch (error) {
+    detail.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+  }
+}
+
+function renderSessions(derived) {
+  const scopeToolbar = document.getElementById('session-scope-toolbar');
+  const allCount = derived.sessions.length;
+  const changedCount = derived.changedSessions.length;
+  scopeToolbar.innerHTML = `
+    <button class="btn subtle ${state.sessionScope === 'all' ? 'active' : ''}" type="button" data-session-scope="all">All sessions (${allCount})</button>
+    <button class="btn subtle ${state.sessionScope === 'changed' ? 'active' : ''}" type="button" data-session-scope="changed">Code-changing only (${changedCount})</button>
+  `;
+
+  const riskToolbar = document.getElementById('session-risk-toolbar');
+  const riskOptions = ['all', 'high', 'medium', 'low', 'none'];
+  riskToolbar.innerHTML = riskOptions.map(option => `
+    <button class="btn subtle ${state.sessionRisk === option ? 'active' : ''}" type="button" data-session-risk="${option}">${option}</button>
+  `).join('');
+
+  let sessions = [...derived.sessions];
+  if (state.sessionRisk !== 'all') sessions = sessions.filter(session => session.risk_level === state.sessionRisk);
+  const sessionsBeforeScope = sessions.length;
+  if (state.sessionScope === 'changed') sessions = sessions.filter(sessionHasEdits);
+
+  if (state.selectedSession && !sessions.some(session => session.session_id === state.selectedSession)) {
+    state.selectedSession = null;
+  }
+
+  const list = document.getElementById('session-list');
+  if (!sessions.length) {
+    const emptyMessage = state.sessionScope === 'changed' && sessionsBeforeScope
+      ? 'This filter hides chat-only sessions for the current source. Switch to All sessions to replay Cursor or Codex runs that did not edit files.'
+      : 'No sessions match the current replay filters.';
+    list.innerHTML = `<div class="empty">${esc(emptyMessage)}</div>`;
+    document.getElementById('session-detail').innerHTML = `<div class="empty">${esc(emptyMessage)}</div>`;
+    return;
+  } else {
+    list.innerHTML = sessions.map(session => `
+      <div class="session-item ${state.selectedSession === session.session_id ? 'active' : ''}" data-open-session="${escAttr(session.session_id)}">
+        <div class="session-top">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+              <span class="risk-tag ${toneClassFromRisk(session.risk_level)}">${esc(session.risk_level)} risk</span>
+              <span class="source-tag ${sourceBadge(session.source)}">${esc(SOURCE_LABELS[session.source] || session.source)}</span>
+              <span class="tiny">${esc(fmtRelative(session.timestamp))}</span>
+            </div>
+            <div class="session-summary">${esc(session.narrative)}</div>
+            <div class="session-meta">
+              <span class="mini-chip">${session.files_edited.length} file${session.files_edited.length === 1 ? '' : 's'}</span>
+              <span class="mini-chip">${session.num_rounds} rounds</span>
+              <span class="mini-chip">${esc(session.scope_label)}</span>
+              ${!sessionHasEdits(session) ? '<span class="mini-chip">chat-only replay</span>' : ''}
+              ${session.files_edited.length >= 8 ? '<span class="mini-chip tone-yellow">wide pass</span>' : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (!state.selectedSession && sessions.length) {
+    selectSession(sessions[0].session_id);
+    return;
+  }
+  if (!state.selectedSession) {
+    document.getElementById('session-detail').innerHTML = `<div class="empty">Pick a session to see the rounds, touched files, and shipping recommendation.</div>`;
+  }
+}
+
+async function selectSession(sessionId) {
+  state.selectedSession = sessionId;
+  document.querySelectorAll('[data-open-session]').forEach(item => item.classList.toggle('active', item.dataset.openSession === sessionId));
+  const detail = document.getElementById('session-detail');
+  detail.innerHTML = `<div class="empty">Loading session replay...</div>`;
+  try {
+    const data = await fetchJson(`/api/session/${encodeURIComponent(sessionId)}`);
+    const traceFocus = state.selectedSessionTrace?.sessionId === sessionId ? state.selectedSessionTrace : null;
+    const allEdits = data.rounds.flatMap(round => round.file_edits || []);
+    const toolCounts = new Map();
+    allEdits.forEach(edit => toolCounts.set(edit.tool_name, (toolCounts.get(edit.tool_name) || 0) + 1));
+    const toolSummary = [...toolCounts.entries()].sort((a, b) => b[1] - a[1]).map(([tool, count]) => `${tool} × ${count}`).join(' · ') || 'No edit tools';
+
+    detail.innerHTML = `
+      <div>
+        ${traceFocus ? `<div class="trace-banner">Trace focus: ${esc(traceFocus.filePath)} in round ${traceFocus.roundNum}. This is the most recent recorded edit trace for that file.</div>` : ''}
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div class="detail-title">Session replay</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px">
+              <span class="risk-tag ${toneClassFromRisk(data.risk_level)}">${esc(data.risk_level)} risk</span>
+              <span class="source-tag ${sourceBadge(data.source)}">${esc(SOURCE_LABELS[data.source] || data.source)}</span>
+              <span class="tiny">${esc(fmtTime(data.timestamp))}</span>
+            </div>
+            <div style="font-size:22px;line-height:1.2;letter-spacing:-.04em;margin-bottom:8px">${esc(data.review_summary.recommendation)}</div>
+            <div class="muted" style="font-size:14px;line-height:1.55">${esc(data.narrative)}</div>
+          </div>
+        </div>
+
+        <div class="watch-meta" style="margin-top:16px">
+          <span class="mini-chip">${allEdits.length} edit events</span>
+          <span class="mini-chip">${data.rounds.length} rounds</span>
+          <span class="mini-chip">${esc(data.scope_label)}</span>
+          <span class="mini-chip">${esc(toolSummary)}</span>
+          ${allEdits.length >= 12 ? '<span class="mini-chip tone-yellow">review in smaller chunks</span>' : ''}
+        </div>
+
+        <div class="review-grid">
+          ${renderReviewCard('Must review', data.review_summary.must_review, 'tone-red')}
+          ${renderReviewCard('Worth checking', data.review_summary.worth_checking, 'tone-yellow')}
+          ${renderReviewCard('Probably fine', data.review_summary.probably_fine, 'tone-green')}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">Rounds</div>
+          <div class="rounds">
+            ${data.rounds.map((round, index) => `
+              <div class="round-card ${(index === 0 || traceFocus?.roundNum === round.round_num) ? 'expanded' : ''} ${traceFocus?.roundNum === round.round_num ? 'trace-focus' : ''}" data-round-num="${round.round_num}">
+                <div class="round-head" data-toggle-round="1">
+                  <div>
+                    <div class="round-title">Round ${round.round_num}${round.file_edits.length ? ` · ${round.file_edits.length} edit${round.file_edits.length === 1 ? '' : 's'}` : ' · no edits'}</div>
+                    <div class="tiny" style="margin-top:4px">${round.round_blast_radius} downstream files could feel this round</div>
+                  </div>
+                  <span class="risk-tag ${toneClassFromRisk(round.round_risk_level)}">${esc(round.round_risk_level)} risk</span>
+                </div>
+                <div class="round-body">
+                  ${round.user_message_preview ? `<div class="prompt-preview">${esc(round.user_message_preview)}</div>` : ''}
+                  ${round.file_edits.length ? `
+                    <div class="edit-list">
+                      ${round.file_edits.map(edit => `
+                        <div class="edit-item ${traceFocus?.roundNum === round.round_num && traceFocus?.filePath === edit.file_path ? 'trace-hit' : ''}">
+                          <span class="path-line clickable" data-open-file="${escAttr(edit.file_path)}">${esc(edit.file_path)}</span>
+                          <span class="tier-tag ${toneClassFromTier(edit.tier)}">T${edit.tier}</span>
+                          <span class="tiny">${esc(edit.tool_name)} · ${esc(edit.short_impact || edit.impact_label)}</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : '<div class="empty">This round did not modify any files.</div>'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    if (traceFocus) {
+      const targetRound = detail.querySelector(`[data-round-num="${traceFocus.roundNum}"]`);
+      if (targetRound) {
+        targetRound.scrollIntoView({block: 'center', behavior: 'smooth'});
+      }
+    }
+  } catch (error) {
+    detail.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+  }
+}
+
+function renderReviewCard(title, items, toneClass) {
+  return `
+    <div class="review-card">
+      <h4 class="${toneClass}">${esc(title)}</h4>
+      ${items.length ? `
+        <ul>
+          ${items.slice(0, 6).map(item => `
+            <li>
+              <span class="clickable mono" data-open-file="${escAttr(item.path)}">${esc(item.path)}</span>
+              <div class="tiny" style="margin-top:4px">${esc(item.label)}</div>
+            </li>
+          `).join('')}
+        </ul>
+      ` : '<div class="tiny">None in this bucket.</div>'}
+    </div>
+  `;
+}
+
+// ---- Dep Graph tab ----
+
+let _graphAnimId = null;
+let _graphMounted = false;
+
+function renderGraphTab(derived) {
+  if (state.tab !== 'graph') return;
+  if (_graphMounted && state.graphData) return;
+  initGraphView();
+}
+
+async function initGraphView() {
+  const sidebar = document.getElementById('graph-sidebar');
+  if (!state.graphData) {
+    sidebar.innerHTML = '<div class="empty">Loading dependency graph...</div>';
+    try {
+      state.graphData = await fetchJson('/api/graph');
+    } catch (error) {
+      sidebar.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+      return;
+    }
+  }
+  sidebar.innerHTML = '<div class="empty">Click any node in the graph to inspect its edit history across editors.</div>';
+  mountFullGraph(state.graphData);
+}
+
+function graphNodeFill(node) {
+  if (node.tier === 1) return 'var(--red)';
+  if (node.tier === 2) return 'var(--yellow)';
+  if (node.tier === 3) return 'var(--blue)';
+  return 'var(--text-muted)';
+}
+
+function graphNodeRadius(node) {
+  return Math.max(4, Math.min(22, 3.5 + Math.sqrt(node.blast_radius + 1) * 2.2));
+}
+
+function createForceSimulation(nodes, edges, nodeMap, width, height) {
+  let alpha = 1.0;
+  const alphaDecay = 0.993;
+  const repStrength = 700;
+  const edgeLen = 90;
+  const edgeStr = 0.06;
+  const centerStr = 0.012;
+
+  function tick() {
+    alpha *= alphaDecay;
+    if (alpha < 0.001) return;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.fixed) continue;
+      n.vx += (width / 2 - n.x) * centerStr * alpha;
+      n.vy += (height / 2 - n.y) * centerStr * alpha;
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        const distSq = dx * dx + dy * dy;
+        if (distSq > 160000) continue;
+        const dist = Math.sqrt(distSq) || 0.5;
+        const force = repStrength * alpha / (dist * dist);
+        const fx = (dx / dist) * force, fy = (dy / dist) * force;
+        if (!a.fixed) { a.vx -= fx; a.vy -= fy; }
+        if (!b.fixed) { b.vx += fx; b.vy += fy; }
+      }
+    }
+
+    for (let i = 0; i < edges.length; i++) {
+      const e = edges[i];
+      const s = nodeMap.get(e.source), t = nodeMap.get(e.target);
+      if (!s || !t) continue;
+      let dx = t.x - s.x, dy = t.y - s.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 0.5;
+      const force = (dist - edgeLen) * edgeStr * alpha;
+      const fx = (dx / dist) * force, fy = (dy / dist) * force;
+      if (!s.fixed) { s.vx += fx; s.vy += fy; }
+      if (!t.fixed) { t.vx -= fx; t.vy -= fy; }
+    }
+
+    const damping = 0.72;
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.fixed) continue;
+      n.vx *= damping;
+      n.vy *= damping;
+      n.x += n.vx;
+      n.y += n.vy;
+      n.x = Math.max(n.r + 5, Math.min(width - n.r - 5, n.x));
+      n.y = Math.max(n.r + 5, Math.min(height - n.r - 5, n.y));
+    }
+  }
+
+  return {
+    tick,
+    get alpha() { return alpha; },
+    set alpha(v) { alpha = v; },
+  };
+}
+
+function mountFullGraph(data) {
+  const svgEl = document.getElementById('graph-svg');
+  if (!svgEl) return;
+  if (_graphAnimId) { cancelAnimationFrame(_graphAnimId); _graphAnimId = null; }
+
+  const rect = svgEl.getBoundingClientRect();
+  const width = Math.max(600, rect.width || 800);
+  const height = Math.max(400, rect.height || 600);
+  const ns = 'http://www.w3.org/2000/svg';
+
+  const nodes = data.nodes.map(n => ({
+    ...n,
+    r: graphNodeRadius(n),
+    x: undefined, y: undefined,
+    vx: 0, vy: 0,
+    fixed: false,
+    el: null,
+  }));
+
+  const dirs = [...new Set(nodes.map(n => n.directory))];
+  const dirAngle = new Map();
+  dirs.forEach((d, i) => dirAngle.set(d, (i / dirs.length) * Math.PI * 2));
+  nodes.forEach(n => {
+    const a = dirAngle.get(n.directory) + (Math.random() - 0.5) * 0.6;
+    const spread = 80 + Math.random() * Math.min(200, width * 0.25);
+    n.x = width / 2 + Math.cos(a) * spread;
+    n.y = height / 2 + Math.sin(a) * spread;
+  });
+
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  const edges = data.edges.filter(e => nodeMap.has(e.source) && nodeMap.has(e.target));
+
+  svgEl.innerHTML = '';
+  svgEl.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  const defs = document.createElementNS(ns, 'defs');
+  defs.innerHTML = `
+    <filter id="fullGraphGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  `;
+  svgEl.appendChild(defs);
+
+  const edgeLayer = document.createElementNS(ns, 'g');
+  const nodeLayer = document.createElementNS(ns, 'g');
+  svgEl.appendChild(edgeLayer);
+  svgEl.appendChild(nodeLayer);
+
+  const edgeEls = edges.map(edge => {
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('stroke', 'rgba(145,177,196,.12)');
+    line.setAttribute('stroke-width', '0.7');
+    edgeLayer.appendChild(line);
+    return { edge, line };
+  });
+
+  nodes.forEach(node => {
+    const g = document.createElementNS(ns, 'g');
+    g.style.cursor = 'grab';
+
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('r', String(node.r));
+    circle.setAttribute('fill', graphNodeFill(node));
+    circle.setAttribute('opacity', node.edit_count > 0 ? '0.92' : '0.48');
+
+    if (node.edit_count > 0) {
+      circle.setAttribute('stroke', 'var(--accent)');
+      circle.setAttribute('stroke-width', '2');
+      const glow = document.createElementNS(ns, 'circle');
+      glow.setAttribute('r', String(node.r + 4));
+      glow.setAttribute('fill', 'none');
+      glow.setAttribute('stroke', 'var(--accent)');
+      glow.setAttribute('stroke-width', '1');
+      glow.setAttribute('opacity', '0.3');
+      g.appendChild(glow);
+    } else {
+      circle.setAttribute('stroke', 'rgba(145,177,196,.22)');
+      circle.setAttribute('stroke-width', '0.6');
+    }
+
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = `${node.id}\nTier ${node.tier} · ${node.blast_radius} downstream · ${node.edit_count} AI edits`;
+
+    g.append(circle, title);
+
+    if (node.edit_count > 0 || node.blast_radius >= 8) {
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('class', 'graph-node-label');
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('dy', String(-node.r - 5));
+      label.setAttribute('fill', node.edit_count > 0 ? 'var(--text)' : 'var(--text-dim)');
+      label.setAttribute('font-size', node.edit_count > 0 ? '10' : '8.5');
+      label.textContent = shortPath(node.id, 1);
+      g.appendChild(label);
+    }
+
+    node.el = g;
+    nodeLayer.appendChild(g);
+  });
+
+  const sim = createForceSimulation(nodes, edges, nodeMap, width, height);
+
+  function render() {
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.el.setAttribute('transform', `translate(${n.x},${n.y})`);
+    }
+    for (let i = 0; i < edgeEls.length; i++) {
+      const { edge, line } = edgeEls[i];
+      const s = nodeMap.get(edge.source), t = nodeMap.get(edge.target);
+      if (s && t) {
+        line.setAttribute('x1', String(s.x));
+        line.setAttribute('y1', String(s.y));
+        line.setAttribute('x2', String(t.x));
+        line.setAttribute('y2', String(t.y));
+      }
+    }
+  }
+
+  let tickCount = 0;
+  const maxTicks = 350;
+
+  function animate() {
+    sim.tick();
+    render();
+    tickCount++;
+    if (tickCount < maxTicks && sim.alpha > 0.001) {
+      _graphAnimId = requestAnimationFrame(animate);
+    } else {
+      _graphAnimId = null;
+    }
+  }
+  animate();
+
+  let drag = null;
+  const toSVG = ev => {
+    const r = svgEl.getBoundingClientRect();
+    return {
+      x: ((ev.clientX - r.left) / r.width) * width,
+      y: ((ev.clientY - r.top) / r.height) * height,
+    };
+  };
+
+  nodes.forEach(node => {
+    node.el.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      const p = toSVG(ev);
+      drag = { node, pid: ev.pointerId, ox: p.x - node.x, oy: p.y - node.y, moved: false };
+      svgEl.setPointerCapture(ev.pointerId);
+      node.el.style.cursor = 'grabbing';
+      node.fixed = true;
+    });
+  });
+
+  svgEl.addEventListener('pointermove', ev => {
+    if (!drag || drag.pid !== ev.pointerId) return;
+    const p = toSVG(ev);
+    drag.node.x = Math.max(drag.node.r, Math.min(width - drag.node.r, p.x - drag.ox));
+    drag.node.y = Math.max(drag.node.r, Math.min(height - drag.node.r, p.y - drag.oy));
+    drag.moved = true;
+    render();
+  });
+
+  const endDrag = ev => {
+    if (!drag || drag.pid !== ev.pointerId) return;
+    const d = drag;
+    drag = null;
+    svgEl.releasePointerCapture(ev.pointerId);
+    d.node.el.style.cursor = 'grab';
+    d.node.fixed = false;
+    if (tickCount >= maxTicks || !_graphAnimId) {
+      tickCount = maxTicks - 60;
+      sim.alpha = 0.08;
+      animate();
+    }
+    if (!d.moved) selectGraphNode(d.node.id);
+  };
+
+  svgEl.addEventListener('pointerup', endDrag);
+  svgEl.addEventListener('pointercancel', endDrag);
+
+  function highlightNode(nodeId) {
+    nodes.forEach(n => {
+      const circle = n.el.querySelector('circle');
+      if (!circle) return;
+      if (nodeId && n.id === nodeId) {
+        circle.setAttribute('stroke', 'var(--accent)');
+        circle.setAttribute('stroke-width', '3');
+        circle.setAttribute('opacity', '1');
+      } else if (nodeId) {
+        const isNeighbor = edges.some(e =>
+          (e.source === nodeId && e.target === n.id) || (e.target === nodeId && e.source === n.id)
+        );
+        circle.setAttribute('opacity', isNeighbor ? '0.85' : '0.2');
+        if (!isNeighbor && n.id !== nodeId) {
+          circle.setAttribute('stroke-width', n.edit_count > 0 ? '2' : '0.6');
+        }
+      } else {
+        circle.setAttribute('opacity', n.edit_count > 0 ? '0.92' : '0.48');
+        circle.setAttribute('stroke', n.edit_count > 0 ? 'var(--accent)' : 'rgba(145,177,196,.22)');
+        circle.setAttribute('stroke-width', n.edit_count > 0 ? '2' : '0.6');
+      }
+    });
+    edgeEls.forEach(({ edge, line }) => {
+      if (nodeId) {
+        const connected = edge.source === nodeId || edge.target === nodeId;
+        line.setAttribute('stroke', connected ? 'rgba(104,214,255,.5)' : 'rgba(145,177,196,.05)');
+        line.setAttribute('stroke-width', connected ? '1.8' : '0.5');
+      } else {
+        line.setAttribute('stroke', 'rgba(145,177,196,.12)');
+        line.setAttribute('stroke-width', '0.7');
+      }
+    });
+  }
+
+  svgEl._highlightNode = highlightNode;
+  svgEl._resetGraph = () => {
+    nodes.forEach(n => {
+      const a = dirAngle.get(n.directory) + (Math.random() - 0.5) * 0.6;
+      const spread = 80 + Math.random() * Math.min(200, width * 0.25);
+      n.x = width / 2 + Math.cos(a) * spread;
+      n.y = height / 2 + Math.sin(a) * spread;
+      n.vx = 0;
+      n.vy = 0;
+      n.fixed = false;
+    });
+    tickCount = 0;
+    sim.alpha = 1.0;
+    state.selectedGraphNode = null;
+    highlightNode(null);
+    document.getElementById('graph-sidebar').innerHTML = '<div class="empty">Click any node in the graph to inspect its edit history across editors.</div>';
+    if (!_graphAnimId) animate();
+  };
+
+  _graphMounted = true;
+}
+
+async function selectGraphNode(nodeId) {
+  state.selectedGraphNode = nodeId;
+  const svgEl = document.getElementById('graph-svg');
+  if (svgEl._highlightNode) svgEl._highlightNode(nodeId);
+
+  const sidebar = document.getElementById('graph-sidebar');
+  sidebar.innerHTML = '<div class="empty">Loading file detail...</div>';
+
+  try {
+    const data = await fetchFileDetail(nodeId);
+    const tierClass = toneClassFromTier(data.tier);
+    const lastSource = data.last_edit?.source || data.edit_history?.[0]?.source || 'unknown';
+    const testLabel = data.has_obvious_test === true ? 'Guarded'
+      : data.has_obvious_test === false ? 'Missing test' : 'No test signal';
+
+    const signalHtml = data.signals?.length
+      ? `<div class="signal-row">${data.signals.slice(0, 3).map(renderSignalChip).join('')}</div>`
+      : '';
+
+    const sourceHtml = renderSourceHistorySummary(data.edit_history);
+
+    const trailHtml = data.edit_history.length ? `
+      <div class="edit-timeline">
+        ${data.edit_history.slice(0, 10).map(edit => `
+          <div class="edit-entry">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+              <div>
+                <span class="source-tag ${sourceBadge(edit.source)}">${esc(SOURCE_LABELS[edit.source] || edit.source)}</span>
+                <div class="tiny" style="margin-top:6px">${esc(edit.tool_name)} · round ${edit.round_num}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                <span class="tiny">${esc(fmtRelative(edit.timestamp))}</span>
+                <button
+                  class="btn subtle"
+                  type="button"
+                  data-open-trace-session="${escAttr(edit.session_id)}"
+                  data-open-trace-round="${escAttr(edit.round_num)}"
+                  data-open-trace-file="${escAttr(data.path)}"
+                >Open trace</button>
+              </div>
+            </div>
+            ${edit.session_narrative ? `<div class="tiny" style="margin-top:6px">${esc(edit.session_narrative)}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : '<div class="empty">No AI edits recorded for this file yet.</div>';
+
+    const depsHtml = data.direct_imported_by.length
+      ? data.direct_imported_by.slice(0, 8).map(dep => `
+          <div class="edit-entry clickable" data-graph-navigate="${escAttr(dep)}" style="cursor:pointer">
+            <span class="mono" style="font-size:11px">${esc(dep)}</span>
+          </div>
+        `).join('')
+      : '<div class="tiny">No direct dependents.</div>';
+
+    const importsHtml = data.direct_imports.length
+      ? data.direct_imports.slice(0, 8).map(dep => `
+          <div class="edit-entry clickable" data-graph-navigate="${escAttr(dep)}" style="cursor:pointer">
+            <span class="mono" style="font-size:11px">${esc(dep)}</span>
+          </div>
+        `).join('')
+      : '<div class="tiny">No direct imports.</div>';
+
+    sidebar.innerHTML = `
+      <div>
+        <div class="path-line" style="font-size:14px;color:var(--text);word-break:break-all">${esc(data.path)}</div>
+        <div class="watch-meta" style="margin-top:12px">
+          <span class="tier-tag ${tierClass}">T${data.tier}</span>
+          <span class="mini-chip">${data.blast_radius} downstream</span>
+          <span class="mini-chip">${data.loc} LOC</span>
+          <span class="mini-chip">${data.edit_count} sessions</span>
+        </div>
+        ${signalHtml}
+      </div>
+
+      <div class="focus-kv" style="margin-top:4px">
+        <div class="focus-card">
+          <span class="focus-label">Last AI edit</span>
+          <strong style="font-size:15px">${esc(data.last_edit ? fmtRelative(data.last_edit.timestamp) : 'None')}</strong>
+          <div class="tiny">${esc(data.last_edit ? (SOURCE_LABELS[lastSource] || lastSource) : 'No recorded editor')}</div>
+        </div>
+        <div class="focus-card">
+          <span class="focus-label">Risk score</span>
+          <strong style="font-size:15px">${data.risk_score.toFixed(2)}</strong>
+          <div class="tiny">${data.tier <= 2 ? 'Worth a careful review' : 'Low structural risk'}</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">By editor</div>
+        ${sourceHtml}
+      </div>
+
+      <div class="sidebar-section">
+        <div class="history-head">
+          <div class="sidebar-title" style="margin-bottom:0">Edit trail</div>
+          <div class="tiny">${data.edit_history.length ? `${Math.min(10, data.edit_history.length)} of ${data.edit_history.length}` : 'No edits'}</div>
+        </div>
+        ${trailHtml}
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Dependents (${data.direct_imported_by.length})</div>
+        ${depsHtml}
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Imports (${data.direct_imports.length})</div>
+        ${importsHtml}
+      </div>
+
+      <div style="margin-top:8px">
+        <button class="btn subtle" type="button" data-open-file="${escAttr(data.path)}">Open in file radar</button>
+      </div>
+    `;
+  } catch (error) {
+    sidebar.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+  }
+}
+
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.tab').forEach(button => button.classList.toggle('active', button.dataset.tabTarget === tab));
+  document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${tab}`));
+  if (tab === 'graph') renderGraphTab(computeDerived());
+}
+
+function restoreSelections() {
+  const fileSearch = document.getElementById('file-search');
+  if (fileSearch && !fileSearch.dataset.bound) {
+    fileSearch.dataset.bound = '1';
+    fileSearch.addEventListener('input', () => {
+      state.selectedFile = null;
+      renderFiles(computeDerived());
+    });
+  }
+
+  const visibleFiles = flattenFiles()
+    .filter(file => state.filesScope === 'all' || file.edit_count > 0)
+    .filter(file => state.selectedTier === null || file.tier === state.selectedTier);
+  if (state.selectedFile && visibleFiles.some(file => file.path === state.selectedFile)) {
+    showFileDetail(state.selectedFile);
+  }
+
+  let visibleSessions = [...(state.sessions?.sessions || [])];
+  if (state.sessionScope === 'changed') visibleSessions = visibleSessions.filter(sessionHasEdits);
+  if (state.sessionRisk !== 'all') visibleSessions = visibleSessions.filter(session => session.risk_level === state.sessionRisk);
+  if (state.selectedSession && visibleSessions.some(session => session.session_id === state.selectedSession)) {
+    selectSession(state.selectedSession);
+  } else if (visibleSessions.length) {
+    selectSession(visibleSessions[0].session_id);
+  }
+}
+
+document.addEventListener('click', event => {
+  const target = event.target.closest('[data-refresh],[data-source-filter],[data-tab-target],[data-open-file],[data-show-file],[data-open-session],[data-open-trace-session],[data-tier-filter],[data-file-sort],[data-files-scope],[data-session-scope],[data-session-risk],[data-overview-graph-file],[data-toggle-round],[data-graph-action],[data-graph-navigate],[data-chat-submit],[data-chat-prompt]');
+  if (!target) return;
+
+  if (target.dataset.refresh !== undefined) {
+    loadAll({flash: true});
+    return;
+  }
+  if (target.dataset.sourceFilter !== undefined) {
+    state.sourceFilter = target.dataset.sourceFilter || null;
+    state.selectedFile = null;
+    state.selectedOverviewGraphFile = null;
+    state.selectedSession = null;
+    state.selectedSessionTrace = null;
+    loadAll();
+    return;
+  }
+  if (target.dataset.tabTarget) {
+    switchTab(target.dataset.tabTarget);
+    return;
+  }
+  if (target.dataset.openFile) {
+    switchTab('files');
+    showFileDetail(target.dataset.openFile);
+    return;
+  }
+  if (target.dataset.showFile) {
+    showFileDetail(target.dataset.showFile);
+    return;
+  }
+  if (target.dataset.openSession) {
+    state.selectedSessionTrace = null;
+    switchTab('sessions');
+    selectSession(target.dataset.openSession);
+    return;
+  }
+  if (target.dataset.openTraceSession) {
+    openTrace(
+      target.dataset.openTraceSession,
+      Number(target.dataset.openTraceRound),
+      target.dataset.openTraceFile,
+    );
+    return;
+  }
+  if (target.dataset.tierFilter) {
+    const tier = Number(target.dataset.tierFilter);
+    state.selectedTier = state.selectedTier === tier ? null : tier;
+    state.selectedFile = null;
+    renderFiles(computeDerived());
+    return;
+  }
+  if (target.dataset.fileSort) {
+    state.fileSort = target.dataset.fileSort;
+    state.selectedFile = null;
+    renderFiles(computeDerived());
+    return;
+  }
+  if (target.dataset.filesScope) {
+    state.filesScope = target.dataset.filesScope;
+    state.selectedFile = null;
+    renderFiles(computeDerived());
+    return;
+  }
+  if (target.dataset.sessionScope) {
+    state.sessionScope = target.dataset.sessionScope;
+    state.selectedSession = null;
+    renderSessions(computeDerived());
+    return;
+  }
+  if (target.dataset.sessionRisk) {
+    state.sessionRisk = target.dataset.sessionRisk;
+    state.selectedSession = null;
+    renderSessions(computeDerived());
+    return;
+  }
+  if (target.dataset.overviewGraphFile) {
+    state.selectedOverviewGraphFile = target.dataset.overviewGraphFile;
+    renderOverview(computeDerived());
+    return;
+  }
+  if (target.dataset.chatSubmit) {
+    submitOverviewChat(target.dataset.chatSubmit);
+    return;
+  }
+  if (target.dataset.chatPrompt) {
+    submitOverviewChat(target.dataset.chatFile, target.dataset.chatPrompt);
+    return;
+  }
+  if (target.dataset.graphAction) {
+    if (target.dataset.graphAction === 'reset') {
+      const svgEl = document.getElementById('graph-svg');
+      if (svgEl?._resetGraph) svgEl._resetGraph();
+    }
+    return;
+  }
+  if (target.dataset.graphNavigate) {
+    selectGraphNode(target.dataset.graphNavigate);
+    return;
+  }
+  if (target.dataset.toggleRound !== undefined) {
+    target.closest('.round-card').classList.toggle('expanded');
+  }
+});
+
+document.addEventListener('input', event => {
+  const target = event.target.closest('[data-chat-input]');
+  if (!target) return;
+  getFileChatState(target.dataset.chatInput).draft = target.value;
+});
+
+let refreshTimer = null;
+function startAutoRefresh(intervalMs = 30000) {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => loadAll(), intervalMs);
+}
+
+loadAll().then(() => startAutoRefresh());
+</script>
+</body>
+</html>

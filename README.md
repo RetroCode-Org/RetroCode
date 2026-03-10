@@ -1,5 +1,15 @@
 ![RetroCode](assets/imgs/retro_wide.png)
 
+<p align="center">
+  <a href="https://join.slack.com/t/retrocode-workspace/shared_invite/zt-3s4qb61lg-WH3V_3K0i4fe97tJed8Icw">
+    <img alt="Join us on Slack" src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
+  </a>
+  <a href="https://discord.gg/CFEcwyWC">
+    <img alt="Join us on Discord" src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white">
+  </a>
+  <a href="https://forms.gle/CyBKhEyGSvEUmXJT6"><strong>Chat with us!</strong></a>
+</p>
+
 A plugin for AI coding agents (Claude Code, Cursor, Codex) that adds capabilities current providers don't offer. RetroCode reads your agent session traces and turns them into actionable improvements — automatically.
 
 **What you get:**

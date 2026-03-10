@@ -474,6 +474,12 @@ def main() -> None:
     parser.add_argument("--max-iter", type=int, default=2,
                         help="(hypogen) LLM propose+refine cycles (default: 2)")
 
+    # Monitoring
+    parser.add_argument("--monitor", action="store_true",
+                        help="Start the blast radius monitoring web dashboard")
+    parser.add_argument("--port", type=int, default=None,
+                        help="Port for the monitoring dashboard (default: 8585)")
+
     args = parser.parse_args()
     # Patch builtins.print so -q suppresses all [retro] output without touching logging
     if args.quiet:
@@ -490,7 +496,11 @@ def main() -> None:
     playbook_path = args.playbook or str(retro_dir / "playbook.txt")
     claude_md_path = args.claude_md or str(Path(working_dir) / "CLAUDE.md")
 
-    if args.hypogen:
+    if args.monitor:
+        from src.monitoring import run_monitor
+        port = args.port if args.port is not None else cfg.monitor_port
+        run_monitor(working_dir, port, cfg)
+    elif args.hypogen:
         run_hypogen(working_dir, retro_dir, args)
     elif args.submit:
         from src.hypoGen.submitter import run_submit
