@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
+import Image from "next/image";
 
 function SlackIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -21,6 +22,13 @@ export function CommunitySection() {
   return (
     <section id="community" className="py-24">
       <div className="text-center space-y-6 max-w-2xl mx-auto">
+        <Image
+          src="/retro-pilot.png"
+          alt="RetroCode Pilot"
+          width={160}
+          height={160}
+          className="mx-auto rounded-2xl drop-shadow-lg"
+        />
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl font-heading">
           Join the Community
         </h2>

@@ -5,6 +5,7 @@ import { GettingStarted } from "@/components/GettingStarted";
 import { CompatibilitySection } from "@/components/CompatibilitySection";
 import { CommunitySection } from "@/components/CommunitySection";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -17,7 +18,16 @@ export default function Home() {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full max-h-128 bg-background/60 blur-hero -z-10 rounded-full pointer-events-none mix-blend-normal" />
 
           <div className="space-y-6">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-foreground leading-tight drop-shadow-2xl max-w-3xl mx-auto">
+            <Image
+              src="/banner.png"
+              alt="RetroCode"
+              width={600}
+              height={150}
+              className="mx-auto drop-shadow-2xl rounded-lg"
+              priority
+            />
+
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-foreground leading-tight drop-shadow-2xl max-w-3xl mx-auto">
               Turn Agent Traces Into
               <br />
               <span className="text-muted-foreground">Auto-Updating Playbooks</span>
