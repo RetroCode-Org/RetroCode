@@ -7,7 +7,9 @@
   <a href="https://discord.gg/CFEcwyWC">
     <img alt="Join us on Discord" src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white">
   </a>
-  <a href="https://forms.gle/CyBKhEyGSvEUmXJT6"><strong>Chat with us!</strong></a>
+  <a href="https://forms.gle/CyBKhEyGSvEUmXJT6">
+    <img alt="Chat with us!" src="https://img.shields.io/badge/Chat%20with%20us!-34A853?style=for-the-badge">
+  </a>
 </p>
 
 A plugin for AI coding agents (Claude Code, Cursor, Codex) that adds capabilities current providers don't offer. RetroCode reads your agent session traces and turns them into actionable improvements — automatically.
