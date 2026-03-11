@@ -19,3 +19,9 @@ build/
 *.egg-info/
 dist/
 *.egg
+
+website/node_modules
+website/.next
+website/out
+
+.gitignore
