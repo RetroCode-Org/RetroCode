@@ -7,7 +7,7 @@ const STEPS = [
   {
     step: "1",
     title: "Install",
-    code: "pip install retro-code",
+    code: "git clone \nhttps://github.com/Hanchenli/RetroCode\ncd RetroCode && pip install -e .",
   },
   {
     step: "2",
@@ -17,7 +17,7 @@ const STEPS = [
   {
     step: "3",
     title: "Run",
-    code: "retro --offline --dir .",
+    code: "cd ~/my-project\nretro --offline --dir .",
   },
 ];
 
@@ -50,7 +50,7 @@ export function GettingStarted() {
             <CardContent className="pt-6">
               <Badge className="mb-4">{`Step ${step.step}`}</Badge>
               <h3 className="text-lg font-semibold mb-3">{step.title}</h3>
-              <code className="text-sm font-mono bg-muted px-3 py-2 rounded-lg block">
+              <code className="text-sm font-mono bg-muted px-3 py-2 rounded-lg block whitespace-pre text-left">
                 {step.code}
               </code>
             </CardContent>

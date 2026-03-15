@@ -48,18 +48,10 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/RetroCode-Org/RetroCode"
+                    href="https://github.com/Hanchenli/RetroCode"
                     className="hover:text-foreground transition-colors"
                   >
                     Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://pypi.org/project/retro-code/"
-                    className="hover:text-foreground transition-colors"
-                  >
-                    PyPI
                   </a>
                 </li>
               </ul>
@@ -69,7 +61,7 @@ export function Footer() {
               <h4 className="font-normal mb-4 text-sm">Community</h4>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" asChild className="h-9 w-9" aria-label="GitHub">
-                  <a href="https://github.com/RetroCode-Org/RetroCode">
+                  <a href="https://github.com/Hanchenli/RetroCode">
                     <Github className="w-5 h-5" aria-hidden="true" />
                   </a>
                 </Button>

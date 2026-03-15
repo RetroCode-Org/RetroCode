@@ -38,7 +38,7 @@ export function CommunitySection() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <Button asChild>
-            <a href="https://github.com/RetroCode-Org/RetroCode">
+            <a href="https://github.com/Hanchenli/RetroCode">
               <Github className="w-4 h-4 mr-2" />
               Star on GitHub
             </a>

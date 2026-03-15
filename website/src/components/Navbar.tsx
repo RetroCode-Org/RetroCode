@@ -203,7 +203,7 @@ export function Navbar() {
             className="h-8 w-8"
             aria-label="GitHub"
           >
-            <a href="https://github.com/RetroCode-Org/RetroCode">
+            <a href="https://github.com/Hanchenli/RetroCode">
               <Github className="w-4 h-4" aria-hidden="true" />
             </a>
           </Button>
