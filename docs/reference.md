@@ -17,6 +17,8 @@ retro [command] [options]
 | `--submit` | Interactively review generated hypotheses and submit selected ones as a PR to [swe-hypotheses](https://github.com/RetroCode-Org/swe-hypotheses) |
 | `--pull` | Download community hypotheses and verify them against your local traces |
 | `--contribute` | Submit your local verification stats for community hypotheses back as a PR |
+| `--analyzeme` | Your AI Coding Wrapped — fun stats about your vibe coding patterns |
+| `--monitor` | Start the blast radius monitoring web dashboard |
 
 ### Global options
 
@@ -26,6 +28,13 @@ retro [command] [options]
 | `--playbook FILE` | `.retro/playbook.txt` | Playbook output file |
 | `--claude-md FILE` | `CLAUDE.md` | CLAUDE.md to sync the playbook into |
 | `-q` / `--quiet` | off | Suppress all non-error output |
+
+### Playbook mode options
+
+| Flag | Default | Description |
+|---|---|---|
+| `--verbose` | off | Interactive mode: review each proposed playbook change in batches of 5 before applying |
+| `--silent` | on *(default)* | Auto-apply all playbook changes without review |
 
 ### Daemon options
 
@@ -45,6 +54,20 @@ Duplicate detection: if a hypothesis already exists in the community repo, you'l
 `retro --pull` downloads hypotheses from the community repo (no `gh` required — uses public GitHub API) and verifies each one against your local traces. Results are saved to `.retro/hypoGen/community_results.json`.
 
 `retro --contribute` reads the saved verification results from `--pull` and submits your anonymous stats (round counts, OR, p-value) back to the community repo as a PR. Each verification is written to `verifications/<hypothesis_id>/<anon_hash>.json` — no project names or usernames are included in the data, only statistical results. Requires `gh` CLI.
+
+### AnalyzeMe options
+
+| Flag | Default | Description |
+|---|---|---|
+| `--analyzeme` | — | Run your AI Coding Wrapped |
+| `--save-html` | off | Also generate a shareable HTML report at `.retro/wrapped.html` |
+
+### Monitor options
+
+| Flag | Default | Description |
+|---|---|---|
+| `--monitor` | — | Start the blast radius monitoring web dashboard |
+| `--port PORT` | `8585` | Port for the monitoring dashboard |
 
 ### Hypothesis generator options
 
@@ -191,6 +214,7 @@ your-project/
     daemon.log                # full daemon logs
     .trace_state.json         # tracks processed session IDs
     .retro.pid                # daemon PID
+    wrapped.html              # from --analyzeme --save-html
     hypoGen/
       HYPOTHESES.md
       results.json
@@ -215,3 +239,61 @@ Bullets are stored with stable IDs so the Curator can modify them in place acros
 ```
 
 ID format: `<prefix>-<5-digit-number>`. Prefixes are configured under `playbook.sections`.
+
+---
+
+## AnalyzeMe (`--analyzeme`)
+
+A zero-LLM-cost analysis that reads your traces locally and renders fun statistics about your AI coding habits.
+
+### Cards
+
+| Card | Description |
+|---|---|
+| Persona | Coding personality assigned based on your usage patterns |
+| Toolkit | Bar chart of tool usage (top 6 tools, normalized across sources) |
+| Languages | Top languages by files touched (extracted from `file_path` in tool args) |
+| Schedule | Night Owl / Early Bird / Afternoon / Evening, peak hour, busiest day, longest streak |
+| Editing Style | "Careful" (>= 60% read-before-edit) vs "Cowboy" |
+| Patience | `(1 - rejections / total_rounds) * 100` — how often you accept AI output |
+| Delegation | Percentage of rounds that used the `Agent` tool |
+| AI Compatibility | `acceptance_rate * 0.5 + tool_diversity * 0.25 + engagement * 0.25` |
+| Fun Facts | Quirky auto-generated one-liners |
+
+### Personas
+
+| Persona | Trigger |
+|---|---|
+| The Conversationalist | Zero tool calls |
+| The Architect | Delegation > 20% |
+| The Impatient Trailblazer | Cowboy editing + low patience |
+| The Speed Demon | Cowboy editing + high patience |
+| The Perfectionist | Patience < 60% |
+| The Power User | Avg tools per round > 8 |
+| The Terminal Wizard | More Bash calls than Edit calls |
+| The Code Detective | Grep + Glob > 30% of tool calls |
+| The Methodical Craftsman | Careful editing style |
+| The Balanced Coder | Default fallback |
+
+### Tool name normalization
+
+Tool names are normalized across sources so stats are consistent:
+
+| Source tool name | Canonical name |
+|---|---|
+| `exec_command`, `shell`, `terminal`, `run_terminal_cmd` | `Bash` |
+| `read_file`, `readfile`, `read_file_tool` | `Read` |
+| `write_file`, `writefile` | `Write` |
+| `edit_file`, `editfile`, `patch`, `apply_diff`, `edit_file_tool` | `Edit` |
+| `search`, `grep`, `search_files`, `codebase_search` | `Grep` |
+| `find_files`, `glob`, `list_dir`, `listdir`, `ls`, `list_files`, `file_search` | `Glob` |
+| `update_plan` | `Agent` |
+
+### HTML export
+
+`--save-html` writes `.retro/wrapped.html` — a self-contained HTML file with:
+- Dark gradient background
+- Glassmorphism cards with `backdrop-filter: blur`
+- Animated progress bars
+- Gradient-filled tool/language bar charts
+- No external dependencies — works offline

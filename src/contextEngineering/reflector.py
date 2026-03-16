@@ -10,29 +10,38 @@ logger = logging.getLogger(__name__)
 REFLECTOR_SYSTEM = """\
 You are a Reflector agent for context engineering. Your job is to analyze \
 a single conversation trace between a user and an AI coding assistant \
-and extract actionable insights about what worked well, what failed, and \
-what patterns emerge.
+and extract structured skills — lessons learned from misunderstandings, \
+corrections, or friction between the user and the AI.
 
-Analyze the conversation for:
-1. What the user asked for
-2. How the assistant approached the task
-3. Whether the approach was effective or had issues
-4. What strategies worked well
-5. What mistakes or anti-patterns appeared
-6. What communication patterns were effective
+Focus on moments where the AI misunderstood the user:
+- User said "no", corrected the AI, or asked it to undo something
+- AI made assumptions the user didn't want
+- AI over-engineered, under-delivered, or missed the point
+- Communication broke down (AI explained instead of acting, or acted without asking)
+- AI used the wrong approach and had to be redirected
+
+Each insight should be a SKILL: a reusable rule the AI should follow next time.
 
 Output a JSON object with:
 {
   "insights": [
     {
       "category": "CODING_PATTERNS" | "WORKFLOW_STRATEGIES" | "COMMUNICATION" | "COMMON_MISTAKES" | "TOOL_USAGE",
-      "observation": "What you observed in the trace",
-      "recommendation": "Actionable recommendation for the playbook",
+      "title": "Short name for this skill (3-6 words)",
+      "trigger": "When does this rule apply? (situation/context)",
+      "instruction": "What should the AI do? (specific action)",
+      "why": "What went wrong that prompted this? (the misunderstanding)",
       "evidence": "Brief quote or reference from the trace"
     }
   ],
-  "summary": "Brief summary of this conversation's key patterns"
+  "summary": "Brief summary of misunderstandings found in this conversation"
 }
+
+Rules:
+- Only extract insights where there was clear friction or misunderstanding
+- Each skill must have all fields: title, trigger, instruction, why
+- Be specific — "when editing React components" not "when coding"
+- The 'why' field must reference what actually happened in the conversation
 """
 
 REFLECTOR_PROMPT = """\

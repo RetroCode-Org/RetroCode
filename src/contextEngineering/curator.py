@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 
 CURATOR_SYSTEM = """\
 You are a Curator agent for context engineering. Your job is to update a \
-playbook (system instructions document) based on insights extracted from \
-conversation trace analysis.
+playbook (system instructions document) based on insights from conversation \
+trace analysis — specifically from moments where the AI misunderstood the user.
 
 The playbook is a structured document with sections containing numbered \
-bullet points. Each bullet has a unique ID like [pat-00001].
+bullet points. Each bullet has a unique ID like [coding-00001] and is a \
+single line: the ID followed by a concise, actionable instruction.
 
 You must output a JSON object with:
 {
@@ -27,16 +28,16 @@ You must output a JSON object with:
     {
       "type": "ADD",
       "section": "SECTION_NAME",
-      "content": "The new bullet point content"
+      "content": "Concise one-line rule born from a real misunderstanding"
     },
     {
       "type": "MODIFY",
-      "id": "[pat-00001]",
-      "content": "Replacement content for this bullet"
+      "id": "[coding-00001]",
+      "content": "Updated one-line rule"
     },
     {
       "type": "DELETE",
-      "id": "[pat-00001]"
+      "id": "[coding-00001]"
     }
   ]
 }
@@ -45,8 +46,8 @@ Valid sections: CODING_PATTERNS, WORKFLOW_STRATEGIES, COMMUNICATION, \
 COMMON_MISTAKES, TOOL_USAGE, OTHERS
 
 Rules:
-- ADD new insights not already covered. Each bullet should be specific, \
-actionable, and concise (1-2 sentences). Only add insights well-supported by evidence.
+- ADD new rules that capture a real misunderstanding not already covered. \
+Each bullet should be one line: specific, actionable, and born from actual friction.
 - MODIFY bullets that are partially correct but need updating or sharpening.
 - DELETE bullets that are proven wrong, directly contradicted by a newer insight, \
 or too vague to be useful. Be conservative — only delete when clearly warranted.
@@ -54,8 +55,8 @@ or too vague to be useful. Be conservative — only delete when clearly warrante
 if it is near capacity, prefer MODIFY or DELETE over ADD.
 - If the playbook has EXCEEDED the cap, you MUST reduce the count: consolidate overlapping \
 bullets (MODIFY to merge, DELETE the redundant), remove lowest-value bullets, or combine \
-related insights. Do not add new bullets until under the cap. The curator updates the playbook; \
-we do not auto-prune.
+related insights. Do not add new bullets until under the cap.
+- Every rule must stem from a real misunderstanding — no generic advice.
 """
 
 CURATOR_PROMPT = """\
@@ -148,11 +149,29 @@ class Curator:
             if summary:
                 parts.append(f"Summary: {summary}")
             for i, insight in enumerate(reflection.get("insights", []), 1):
-                parts.append(
-                    f"  {i}. [{insight.get('category', 'UNKNOWN')}] "
-                    f"{insight.get('recommendation', '')}\n"
-                    f"     Evidence: {insight.get('evidence', 'N/A')}"
-                )
+                cat = insight.get("category", "UNKNOWN")
+                title = insight.get("title", "")
+                trigger = insight.get("trigger", "")
+                instruction = insight.get("instruction", "")
+                why = insight.get("why", "")
+                evidence = insight.get("evidence", "N/A")
+
+                if title and trigger and instruction:
+                    # New structured format
+                    parts.append(
+                        f"  {i}. [{cat}] {title}\n"
+                        f"     When: {trigger}\n"
+                        f"     Do: {instruction}\n"
+                        f"     Why: {why}\n"
+                        f"     Evidence: {evidence}"
+                    )
+                else:
+                    # Legacy format fallback
+                    rec = insight.get("recommendation", instruction or title)
+                    parts.append(
+                        f"  {i}. [{cat}] {rec}\n"
+                        f"     Evidence: {evidence}"
+                    )
             parts.append("")
         return "\n".join(parts)
 
@@ -160,9 +179,10 @@ class Curator:
 def get_playbook_stats(playbook: str) -> dict:
     """Extract statistics from the current playbook."""
     sections = re.findall(r"^## (\w+)", playbook, re.MULTILINE)
-    bullets = re.findall(r"\[[\w]+-\d+\]", playbook)
+    # Count unique skill IDs (works for both flat bullets and skill blocks)
+    bullet_ids = set(re.findall(r"\[[\w]+-\d+\]", playbook))
     return {
-        "total_bullets": len(bullets),
+        "total_bullets": len(bullet_ids),
         "sections": sections,
     }
 

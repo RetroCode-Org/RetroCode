@@ -16,6 +16,8 @@ def save_results_json(hypotheses: list[Hypothesis], path: str):
     """Write hypothesis verification results to JSON."""
     out = []
     for h in hypotheses:
+        rej_rate_signal = (1 - h.pass_rate_pos) if h.n_pos else 0
+        rej_rate_baseline = (1 - h.pass_rate_neg) if h.n_neg else 0
         out.append({
             "id": h.id,
             "description": h.description,
@@ -23,12 +25,16 @@ def save_results_json(hypotheses: list[Hypothesis], path: str):
             "significant": h.is_significant,
             "n_pos": h.n_pos,
             "n_neg": h.n_neg,
+            "rejection_rate_when_signal": round(rej_rate_signal, 4),
+            "rejection_rate_baseline": round(rej_rate_baseline, 4),
             "pass_rate_pos": round(h.pass_rate_pos, 4),
             "pass_rate_neg": round(h.pass_rate_neg, 4),
             "p_value": round(h.p_value, 6),
             "odds_ratio": round(h.odds_ratio, 4),
             "or_ci": [round(h.or_ci_lo, 4), round(h.or_ci_hi, 4)],
         })
+    # Sort: significant first, then by p-value
+    out.sort(key=lambda x: (not x["significant"], x["p_value"]))
     with open(path, "w") as f:
         json.dump(out, f, indent=2)
     print(f"Results saved to {path}")
@@ -75,11 +81,16 @@ def save_features_py(hypotheses: list[Hypothesis], path: str):
 
 def update_hypotheses_md(
     hypotheses: list[Hypothesis],
-    n_sessions: int,
-    md_path: str,
-    label: str = "sessions",
+    n_rounds: int = 0,
+    n_sessions: int = 0,
+    md_path: str = "HYPOTHESES.md",
 ):
-    """Write a human-readable HYPOTHESES.md report."""
+    """Write a human-readable HYPOTHESES.md report.
+
+    Accepts either n_rounds or n_sessions for backwards compat.
+    """
+    total = n_rounds or n_sessions
+    unit = "rounds" if n_rounds else "sessions"
     sig = [h for h in hypotheses if h.is_significant]
     insig = [h for h in hypotheses if not h.is_significant]
 
@@ -87,7 +98,6 @@ def update_hypotheses_md(
         desc = re.sub(r"^\[(TOXIC|HEALTHY)\] ", "", h.description).strip()
         or_str = f"{h.odds_ratio:.2f} [{h.or_ci_lo:.2f}, {h.or_ci_hi:.2f}]"
         p_str = "<0.001" if h.p_value < 0.001 else f"{h.p_value:.3f}"
-        # show rejected counts explicitly: n_rejected = rounds where signal=T/F AND reward=0
         n_rej_T = round(h.n_pos * (1 - h.pass_rate_pos))
         n_rej_F = round(h.n_neg * (1 - h.pass_rate_neg))
         return (
@@ -95,34 +105,84 @@ def update_hypotheses_md(
             f"{or_str} | {p_str} |"
         )
 
+    def interpret(h: Hypothesis) -> str:
+        """Plain-English one-liner explaining what the hypothesis means."""
+        desc = re.sub(r"^\[(TOXIC|HEALTHY)\] ", "", h.description).strip()
+        n_rej_T = round(h.n_pos * (1 - h.pass_rate_pos))
+        rej_rate_T = (1 - h.pass_rate_pos) * 100 if h.n_pos else 0
+        rej_rate_F = (1 - h.pass_rate_neg) * 100 if h.n_neg else 0
+        return (
+            f"When this signal fires, {rej_rate_T:.0f}% of rounds are rejected "
+            f"(vs {rej_rate_F:.0f}% baseline). "
+            f"Seen in {h.n_pos} of {h.n_pos + h.n_neg} rounds."
+        )
+
     header = (
-        "| ID | Description | rounds(signal) | rejected(signal) | rounds(no-signal) | rejected(no-signal) "
-        "| OR [95% CI] | p-value |\n"
+        "| ID | Description | rounds(signal) | rejected | rounds(no signal) | rejected "
+        "| OR [95% CI] | p |\n"
         "|---|---|---:|---:|---:|---:|---|---:|"
     )
 
     lines = [
-        "# Claude Code Round Hypothesis Tracker",
+        "# What triggers users to say No?",
         "",
-        f"**{label.capitalize()} analyzed:** {n_sessions}",
+        "Hypotheses about Claude Code agent behavior patterns that predict",
+        "the user explicitly rejecting or correcting the agent's work.",
+        "",
+        f"**{unit.capitalize()} analyzed:** {total:,}",
         f"**Last updated:** {date.today().isoformat()}",
-        "**Significance criteria:** global p < 0.05",
+        f"**Rejected rounds:** {sum(1 for h in hypotheses[:1] for _ in [0] if total)}",
+        "**Significance:** p < 0.05 (chi-squared test)",
         "",
         "---",
         "",
-        "## Significant",
-        "",
-        header,
-    ]
-    lines += [row(h) for h in sig] if sig else [
-        "| -- | No significant hypotheses yet | | | | | | |"
     ]
 
+    sig_toxic = [h for h in sig if h.toxic]
+    sig_healthy = [h for h in sig if not h.toxic]
+
+    if sig_toxic:
+        lines += [
+            "## Significant toxic patterns",
+            "",
+            "These agent behaviors are statistically linked to user rejection:",
+            "",
+            header,
+        ]
+        lines += [row(h) for h in sig_toxic]
+        lines += [""]
+        for h in sig_toxic:
+            lines.append(f"- **`{h.id}`**: {interpret(h)}")
+        lines += [""]
+
+    if sig_healthy:
+        lines += [
+            "## Significant healthy patterns",
+            "",
+            "These agent behaviors are statistically linked to user acceptance:",
+            "",
+            header,
+        ]
+        lines += [row(h) for h in sig_healthy]
+        lines += [""]
+        for h in sig_healthy:
+            lines.append(f"- **`{h.id}`**: {interpret(h)}")
+        lines += [""]
+
+    if not sig:
+        lines += [
+            "## Significant patterns",
+            "",
+            "No statistically significant patterns found yet. Gather more traces.",
+            "",
+        ]
+
     lines += [
-        "",
         "---",
         "",
-        "## Not Significant",
+        "## Not yet significant",
+        "",
+        "These patterns showed a trend but need more data:",
         "",
         header,
     ]

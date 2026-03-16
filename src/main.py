@@ -82,7 +82,8 @@ def setup_logging(working_dir: str, retro_dir: str) -> None:
 # Daemon loop
 # ---------------------------------------------------------------------------
 
-def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: RetroConfig) -> None:
+def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: RetroConfig,
+               verbose: bool = False) -> None:
     """Infinite polling loop. Runs as a detached background process."""
     retro_dir = str(Path(working_dir) / cfg.retro_dir)
     setup_logging(working_dir, retro_dir)
@@ -95,6 +96,7 @@ def run_daemon(working_dir: str, playbook_path: str, claude_md_path: str, cfg: R
         max_bullets=cfg.max_bullets,
         writers=writers,
         batch_size=cfg.batch_size,
+        verbose=verbose,
     )
     state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
     state = TraceState.load(state_path)
@@ -380,7 +382,8 @@ def run_hypogen(working_dir: str, retro_dir: Path, args) -> None:
 
 
 
-def run_offline(working_dir: str, playbook_path: str, claude_md_path: str, cfg: RetroConfig) -> None:
+def run_offline(working_dir: str, playbook_path: str, claude_md_path: str, cfg: RetroConfig,
+                verbose: bool = False) -> None:
     """Run one playbook update pass using all available sessions, then exit."""
     retro_dir = str(Path(working_dir) / cfg.retro_dir)
     setup_logging(working_dir, retro_dir)
@@ -393,6 +396,7 @@ def run_offline(working_dir: str, playbook_path: str, claude_md_path: str, cfg: 
         max_bullets=cfg.max_bullets,
         writers=writers,
         batch_size=cfg.batch_size,
+        verbose=verbose,
     )
     state_path = str(Path(retro_dir) / TRACE_STATE_FILE)
     state = TraceState.load(state_path)
@@ -457,6 +461,10 @@ def main() -> None:
                         help="Suppress all non-error output")
     parser.add_argument("--offline", action="store_true",
                         help="Run one update pass using all new sessions, then exit")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Interactive mode: review each proposed playbook change before applying")
+    parser.add_argument("--silent", action="store_true",
+                        help="Silent mode: auto-apply playbook changes without review (default)")
 
     # Hypothesis generation
     parser.add_argument("--hypogen", action="store_true",
@@ -473,6 +481,12 @@ def main() -> None:
                         help="(hypogen) Use LLM for session labeling")
     parser.add_argument("--max-iter", type=int, default=2,
                         help="(hypogen) LLM propose+refine cycles (default: 2)")
+
+    # Analyze me (Spotify Wrapped for coding)
+    parser.add_argument("--analyzeme", action="store_true",
+                        help="Your AI Coding Wrapped — fun stats about your vibe coding patterns")
+    parser.add_argument("--save-html", action="store_true",
+                        help="(analyzeme) Also save a shareable HTML report")
 
     # Monitoring
     parser.add_argument("--monitor", action="store_true",
@@ -496,7 +510,10 @@ def main() -> None:
     playbook_path = args.playbook or str(retro_dir / "playbook.txt")
     claude_md_path = args.claude_md or str(Path(working_dir) / "CLAUDE.md")
 
-    if args.monitor:
+    if args.analyzeme:
+        from src.analyzeme.run import run_analyzeme
+        run_analyzeme(working_dir, retro_dir, save_html=args.save_html)
+    elif args.monitor:
         from src.monitoring import run_monitor
         port = args.port if args.port is not None else cfg.monitor_port
         run_monitor(working_dir, port, cfg)
@@ -513,10 +530,10 @@ def main() -> None:
         from src.hypoGen.community import run_contribute
         run_contribute(working_dir, retro_dir)
     elif args.offline:
-        run_offline(working_dir, playbook_path, claude_md_path, cfg)
+        run_offline(working_dir, playbook_path, claude_md_path, cfg, verbose=args.verbose)
     elif args.up:
         if args.foreground:
-            run_daemon(working_dir, playbook_path, claude_md_path, cfg)
+            run_daemon(working_dir, playbook_path, claude_md_path, cfg, verbose=args.verbose)
         else:
             spawn_daemon(working_dir, playbook_path, claude_md_path, cfg)
     elif args.down:

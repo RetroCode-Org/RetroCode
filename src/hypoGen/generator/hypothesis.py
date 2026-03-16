@@ -101,19 +101,17 @@ class Hypothesis:
         return self.p_value < 0.05
 
     def summary(self) -> str:
-        direction = "-> PROBLEMATIC" if self.toxic else "-> SUCCESSFUL"
-        sig = "YES" if self.is_significant else "NO"
-        n_rej_T = round(self.n_pos * (1 - self.pass_rate_pos))
-        n_rej_F = round(self.n_neg * (1 - self.pass_rate_neg))
+        sig = "SIGNIFICANT" if self.is_significant else "not significant"
+        rej_when = (1 - self.pass_rate_pos) * 100 if self.n_pos else 0
+        rej_base = (1 - self.pass_rate_neg) * 100 if self.n_neg else 0
         return (
             f"\n{'─' * 60}\n"
-            f"[{self.id}]  ({direction})\n"
+            f"  {self.id}  [{sig}]\n"
             f"  {self.description}\n"
-            f"  signal=T: {self.n_pos} rounds, {n_rej_T} rejected\n"
-            f"  signal=F: {self.n_neg} rounds, {n_rej_F} rejected\n"
+            f"  When this fires: {rej_when:.0f}% rejected  ({self.n_pos} rounds)\n"
+            f"  Baseline:        {rej_base:.0f}% rejected  ({self.n_neg} rounds)\n"
             f"  OR={self.odds_ratio:.2f} [{self.or_ci_lo:.2f}, {self.or_ci_hi:.2f}]   "
-            f"p={self.p_value:.4f}\n"
-            f"  significant: {sig}"
+            f"p={self.p_value:.4f}"
         )
 
 

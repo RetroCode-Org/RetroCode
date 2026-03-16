@@ -15,15 +15,48 @@ import re
 from typing import Optional
 
 
-# Explicit rejection / correction by the user
+# ── Explicit rejection / correction by the user ──────────────────────────
+#
+# These patterns fire when the NEXT user message tells the agent it
+# got something wrong, undid something, or the result didn't work.
+
 _REJECTION_RE = re.compile(
-    r"(?:^|[\s,\.!?])"
-    r"(no[,\s]|nope|wrong|incorrect|not right|not what i (want|asked|meant|said)"
-    r"|that'?s (wrong|not|incorrect)|you (missed|forgot|broke|got it wrong)"
-    r"|undo|revert|that didn'?t work|still (broken|wrong|not working|failing)"
-    r"|this is (wrong|incorrect|not right|broken)|doesn'?t work|did not work"
-    r"|not working|that'?s not (right|what|it|correct))"
-    r"(?:[\s,\.!?]|$)",
+    r"(?:^|[\s,\.!?;:\-])"
+    r"("
+    # Direct negations
+    r"no[,\.\s!]|nope|wrong|incorrect|not right"
+    r"|not what i (want|asked|meant|said|need)"
+    # Explicit corrections
+    r"|that'?s (wrong|not|incorrect|broken|bad)"
+    r"|you (missed|forgot|broke|got it wrong|shouldn'?t|should not)"
+    # Undo / revert requests
+    r"|undo|revert|roll ?back|put it back|restore"
+    # Failure reports
+    r"|that didn'?t work|still (broken|wrong|not working|failing|doesn)"
+    r"|this is (wrong|incorrect|not right|broken)"
+    r"|doesn'?t work|did not work|not working|isn'?t (right|correct|working)"
+    r"|that'?s not (right|what|it|correct)"
+    # Frustration / stop signals
+    r"|stop|wait|hold on|don'?t do that|why did you"
+    r"|i (said|asked|told you|meant) (not|no|don)"
+    r"|that'?s the opposite"
+    # Claude Code specific: permission denial / interrupt
+    r"|request interrupted"
+    r")"
+    r"(?:[\s,\.!?;:\-]|$)",
+    re.IGNORECASE,
+)
+
+# Messages that look like rejections but are actually just new requests
+_FALSE_POSITIVE_RE = re.compile(
+    r"("
+    r"no (need|worries|problem|rush|pressure|thanks|thank)"
+    r"|not (sure|yet|now|necessarily|a big deal)"
+    r"|stop (the|and|here|it from|running)"  # "stop the server" is not rejection
+    r"|wait (for|until|a moment)"
+    r"|no i (mean|think|was)"  # clarification, not rejection
+    r"|hold on (let me|i need)"  # thinking pause, not rejection
+    r")",
     re.IGNORECASE,
 )
 
@@ -43,6 +76,10 @@ def label_round(user_msg: str, next_user_msg: Optional[str]) -> tuple[float, str
     clean = re.sub(r"<[^>]+>[^<]*</[^>]+>", "", next_user_msg).strip()
     if not clean:
         return 1.0, "last_round"
+
+    # Check for false positives first
+    if _FALSE_POSITIVE_RE.search(clean):
+        return 1.0, "ok"
 
     if _REJECTION_RE.search(clean):
         return 0.0, "rejection"

@@ -17,7 +17,8 @@ A plugin for AI coding agents (Claude Code, Cursor, Codex) that adds capabilitie
 **What you get:**
 - **Playbook Generation** — Automatically builds and maintains project-specific rules from your past sessions, written directly into your agent's rule files
 - **Hypothesis Generation** — Statistically identifies which agent behaviors predict user rejection, with community sharing
-- **AI Code Blast Radius** - Automatically estimates the blast radius of a code edit by identifying how many execution paths and subsystems depend on the modified code.
+- **AnalyzeMe** — Your AI Coding Wrapped: Spotify-style fun stats about your vibe coding patterns, personas, and habits
+- **AI Code Blast Radius** — Automatically estimates the blast radius of a code edit by identifying how many execution paths and subsystems depend on the modified code
 
 Works with Claude Code, Cursor, and Codex. Supports OpenAI, Anthropic, Gemini, and CommonStack as LLM providers.
 
@@ -27,18 +28,48 @@ Works with Claude Code, Cursor, and Codex. Supports OpenAI, Anthropic, Gemini, a
 
 ## Playbook Generation
 
-Automatically builds and maintains a project-specific playbook of coding patterns, workflow strategies, and common mistakes learned from your past sessions. The playbook is written directly into your agent's rule files (`CLAUDE.md`, `.cursor/rules/retro.mdc`, `AGENTS.md`) so every future session benefits.
+Automatically builds and maintains a project-specific playbook of coding patterns, workflow strategies, and common mistakes learned from your past sessions. Focuses on real misunderstandings between you and your AI agent — every rule stems from actual friction. The playbook is written directly into your agent's rule files (`CLAUDE.md`, `.cursor/rules/retro.mdc`, `AGENTS.md`) so every future session benefits.
 
 **How it works:**
 1. Reads session traces from Claude Code, Cursor, and/or Codex
-2. A **Reflector** analyzes each conversation individually for patterns, mistakes, and strategies (parallelized in batches)
-3. A **Curator** takes all reflections together, identifies cross-session patterns, and adds/modifies/removes bullets in a structured playbook
+2. A **Reflector** analyzes each conversation for misunderstandings — corrections, wrong assumptions, over-engineering, communication breakdowns
+3. A **Curator** takes all reflections together, identifies cross-session patterns, and adds/modifies/removes one-liner bullets in a structured playbook
 4. The playbook is synced into configured output files between `<!-- retro:start/end -->` markers
 
+**Two modes:**
+
+| Mode | Flag | Behavior |
+|---|---|---|
+| **Silent** *(default)* | `--silent` or no flag | Auto-applies all curator decisions to the playbook |
+| **Interactive** | `--verbose` | Shows proposed changes 5 at a time; you pick which to keep |
+
 ```bash
-retro --offline --dir .       # run once, update rule files, exit
-retro --up --dir .            # run in background, polling continuously
-retro --down --dir .          # stop the background daemon
+# Silent mode (default) — auto-apply
+retro --offline --dir .
+
+# Interactive mode — review each change
+retro --offline --verbose --dir .
+
+# Background daemon
+retro --up --dir .            # start polling continuously
+retro --down --dir .          # stop the daemon
+```
+
+In `--verbose` mode, you'll see batches of 5 proposed changes and can select by number, `a` (accept all), `s` (skip batch), or `q` (quit):
+
+```
+  Candidates 1-5 of 12:
+
+  [1] + ADD to CODING_PATTERNS
+      Always read the file before editing to avoid overwriting recent changes.
+
+  [2] ~ MODIFY [coding-00003]
+      Prefer Glob/Grep before editing unfamiliar files.
+
+  [3] - DELETE [mistake-00007]
+
+  Enter numbers to keep (e.g. 1,2), 'a' for all, 's' to skip all, or 'q' to quit:
+  >
 ```
 
 ## Hypothesis Generation
@@ -53,6 +84,33 @@ retro --contribute --dir .    # contribute your verification stats back
 ```
 
 Results are written to `.retro/hypoGen/HYPOTHESES.md`. Significant hypotheses can be submitted to [swe-hypotheses](https://github.com/RetroCode-Org/swe-hypotheses) via `retro --submit`. Use `retro --pull` to see how community-discovered patterns hold up against your own data, and `retro --contribute` to add your stats to the shared evidence base.
+
+## AnalyzeMe — Your AI Coding Wrapped
+
+Get a Spotify Wrapped-style breakdown of your AI coding history. See your persona, tool habits, coding schedule, patience score, and quirky fun facts — all computed locally from your traces with zero LLM calls.
+
+```bash
+retro --analyzeme --dir .               # terminal output
+retro --analyzeme --save-html --dir .   # also save a shareable HTML report
+```
+
+**What you'll see:**
+
+| Card | What it shows |
+|---|---|
+| **Persona** | Your coding personality (e.g. "The Terminal Wizard", "The Architect", "The Perfectionist") with description |
+| **Toolkit** | Bar chart of your most-used tools (Read, Edit, Bash, Grep, etc.) |
+| **Languages** | Top languages by files touched |
+| **Schedule** | Night Owl vs Early Bird, peak coding hour, busiest day, longest streak |
+| **Editing Style** | "Careful" (read-then-edit) vs "Cowboy" (edit-first) with a percentage bar |
+| **Patience Score** | How often you say "No" to your AI, with commentary |
+| **Delegation Score** | How much you use sub-agents vs handling things yourself |
+| **AI Compatibility** | Combined score based on acceptance rate, tool diversity, and session engagement |
+| **Fun Facts** | Quirky one-liners about your habits ("Your go-to tool was Bash — you two are inseparable") |
+
+The `--save-html` flag generates a dark-themed, shareable HTML page at `.retro/wrapped.html` with gradient cards and animated bars.
+
+Tool names are normalized across sources — Codex's `exec_command` becomes `Bash`, Cursor's `read_file_tool` becomes `Read`, etc. — so your stats are consistent regardless of which agents you use.
 
 ---
 

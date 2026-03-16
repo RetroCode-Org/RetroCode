@@ -23,7 +23,7 @@ import json
 import logging
 from pathlib import Path
 
-from .base import BaseReader
+from .base import BaseReader, normalize_messages
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +129,9 @@ class CodexReader(BaseReader):
                         "tool_args": [],
                         "name": tool_name,
                     })
+
+        # Normalize Codex-specific tool names to canonical names
+        normalize_messages(messages)
 
         return {
             "session_id": session_id,

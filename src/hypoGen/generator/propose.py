@@ -42,49 +42,83 @@ _SANDBOX_GLOBALS = {
 def format_trace(row: dict[str, Any]) -> str:
     """Compact, LLM-readable representation of a round."""
     msgs = row["msgs"]
+    reward = row.get("reward", "?")
+    label = "REJECTED" if reward == 0.0 else "OK"
+
     lines = [
-        f"ROUND  id={row['session_id']}  reward={row['reward']}  "
-        f"({'OK' if row['reward'] == 1.0 else 'REJECTED'})  "
-        f"n_msgs={row['n_msgs']}"
+        f"ROUND  reward={reward} ({label})  n_msgs={row.get('n_msgs', len(msgs))}"
     ]
-    for i, m in enumerate(msgs):
+
+    # Show what the user asked (context for understanding rejection)
+    user_msg = row.get("user_msg", "")
+    if user_msg:
+        lines.append(f"  USER REQUEST: {user_msg[:200].replace(chr(10), ' ')!r}")
+
+    for i, m in enumerate(msgs[:30]):  # cap at 30 messages for context window
         role = m["role"]
-        snippet = m["content"][:150].replace("\n", " ").strip()
+        snippet = m["content"][:200].replace("\n", " ").strip()
         tool_names = m.get("tool_names", [])
         tool_args = m.get("tool_args", [])
         if role == "assistant" and tool_names:
             tool_str = ", ".join(
-                f"{tn}({list(ta.keys())[:2]})" if isinstance(ta, dict) else tn
+                f"{tn}({', '.join(f'{k}={str(v)[:40]}' for k, v in (ta if isinstance(ta, dict) else {}).items() if k != 'content')})"
                 for tn, ta in zip(tool_names, tool_args)
             )
             lines.append(f"  [{i:03d}] assistant -> [{tool_str}]")
+            if snippet and not tool_names:
+                lines.append(f"         text: {snippet!r:.120}")
         elif role == "user":
             lines.append(f"  [{i:03d}] user  {snippet!r:.120}")
         elif role == "tool":
-            lines.append(f"  [{i:03d}] tool({m.get('name', '?')})  {snippet!r:.120}")
+            # Show error indicators in tool results
+            is_err = any(kw in snippet.lower() for kw in ("error", "traceback", "failed"))
+            err_mark = " [ERROR]" if is_err else ""
+            lines.append(f"  [{i:03d}] tool({m.get('name', '?')}){err_mark}  {snippet!r:.120}")
+
+    if len(msgs) > 30:
+        lines.append(f"  ... ({len(msgs) - 30} more messages)")
+
+    # Show what the user said NEXT (the rejection or acceptance)
+    next_msg = row.get("next_user_msg", "")
+    if next_msg:
+        lines.append(f"  NEXT USER MSG: {next_msg[:200].replace(chr(10), ' ')!r}")
+
     return "\n".join(lines)
 
 
 # -- system prompt -------------------------------------------------------------
 
 _SYSTEM = textwrap.dedent("""\
-You are an expert in analyzing Claude Code agent round traces.
+You are an expert in analyzing Claude Code agent traces to understand
+why users reject AI-generated work.
 
-Each ROUND is one user request + all the assistant/tool messages that follow.
-A round is labeled:
-  reward=1.0  the next user message is OK (question, new request, etc.)
-  reward=0.0  the next user message EXPLICITLY rejects the work
-              (e.g. "No, that's wrong", "undo this", "that didn't work")
+=== CONTEXT ===
+A user works with Claude Code (an AI coding assistant) for days. Sometimes
+the user says "No" / "that's wrong" / "undo" after the agent does something.
+We want to find patterns that predict WHEN the user will say no.
 
-You will propose hypotheses of the form:
-  "If the agent does X in this round, the user is more likely to reject it."
+Each ROUND = one user request + all the assistant/tool messages that follow.
+  reward=1.0  the user accepted the work (or moved on to a new topic)
+  reward=0.0  the user REJECTED the work ("no", "wrong", "undo", "doesn't work")
 
-The goal: detect patterns within a round that predict the user will say "no".
+=== YOUR TASK ===
+Propose hypotheses about agent behavior patterns. Two kinds:
+  TOXIC:   "If the agent does X, the user is more likely to reject."
+  HEALTHY: "If the agent does X, the user is more likely to accept."
 
-Claude Code tools: Read, Edit, Write, Bash, Glob, Grep, Agent, WebSearch
+Good hypotheses are:
+  - SIMPLE: one clear condition, easy to check programmatically
+  - INFORMATIONAL: tells the user something useful about when agents fail or succeed
+  - CONTRIBUTABLE: other users can verify on their own traces
+  - DIVERSE: cover different aspects (tool ordering, error handling, scale, workflow)
+
+Bad hypotheses:
+  - Too broad ("agent used any tool") — fires too often, no signal
+  - Too narrow ("agent edited file X") — only applies to one project
+  - Trivial ("agent produced output") — not informative
 
 === MESSAGE SCHEMA ===
-msgs = all messages within ONE round (assistant + tool messages):
+msgs = messages within ONE round (assistant + tool, no user messages):
   role       : "assistant" | "tool"
   content    : str
   name       : str         (tool name, when role=="tool")
@@ -92,29 +126,24 @@ msgs = all messages within ONE round (assistant + tool messages):
   tool_args  : list[dict]  (input dicts, when role=="assistant")
   char_len   : int
 
-How to iterate tool calls in the round:
-  for tn, args in iter_tool_calls(msgs):
-      if tn == "Bash":   cmd  = args.get("command", "")
-      if tn == "Read":   path = args.get("file_path", "")
-      if tn == "Edit":   path = args.get("file_path", "")
-      if tn == "Glob":   pat  = args.get("pattern", "")
-      if tn == "Grep":   pat  = args.get("pattern", "")
+Iterating:
+  for tn, args in iter_tool_calls(msgs):   # yields (tool_name, args_dict)
+  for name, content in iter_tool_results(msgs):  # yields (tool_name, output_str)
 
-How to iterate tool results:
-  for name, content in iter_tool_results(msgs):
-      if name == "Bash":  # stdout/stderr
+Tool arg keys:
+  Bash:  args.get("command", "")
+  Read:  args.get("file_path", "")
+  Edit:  args.get("file_path", ""), args.get("old_string", ""), args.get("new_string", "")
+  Write: args.get("file_path", ""), args.get("content", "")
+  Glob:  args.get("pattern", "")
+  Grep:  args.get("pattern", "")
 
-Constants:
-  EDIT_TOOLS   = ("Edit", "Write", "NotebookEdit")
-  READ_TOOLS   = ("Read",)
-  SEARCH_TOOLS = ("Glob", "Grep")
-  BASH_TOOL    = "Bash"
-  ERROR_KWS    = ["error:", "traceback", "exception", "failed", ...]
+Constants: EDIT_TOOLS, READ_TOOLS, SEARCH_TOOLS, BASH_TOOL, AGENT_TOOL, ERROR_KWS
 
 === RULES ===
-  1. Use msgs directly — do NOT call get_early_pct (msgs is already one round).
-  2. Return a concrete bool (True/False).
-  3. Prefer patterns that indicate the AI is acting carelessly or without understanding.
+  1. Use msgs directly — do NOT call get_early_pct.
+  2. Return True (signal present) or False.
+  3. Focus on agent BEHAVIOR patterns, not specific file names or content.
 
 Available: json, re, iter_tool_calls, iter_tool_results,
   _parse_args, EDIT_TOOLS, READ_TOOLS, SEARCH_TOOLS, BASH_TOOL, AGENT_TOOL, ERROR_KWS
@@ -129,8 +158,11 @@ def _proposal_prompt(fail_traces: list[str], pass_traces: list[str],
     fail_block = "\n\n".join(fail_traces)
     pass_block = "\n\n".join(pass_traces)
     return textwrap.dedent(f"""\
-Below are REJECTED rounds (user explicitly said "no" / "that's wrong" after this round),
-then OK rounds (user accepted or continued with a new request).
+Below are REJECTED rounds (user explicitly said "no" or corrected the agent),
+then OK rounds (user accepted or moved on).
+
+Study the differences. What did the agent DO in rejected rounds that it
+didn't do in OK rounds?
 
 === REJECTED ROUNDS ===
 {fail_block}
@@ -140,16 +172,21 @@ then OK rounds (user accepted or continued with a new request).
 
 Already known hypotheses (do NOT duplicate): {existing}
 
-Propose 3 NEW hypotheses about patterns within a round that predict rejection.
-For each output a JSON object with:
-  "id"          snake_case identifier
-  "description" one sentence: "If agent does X in this round, user is more likely to reject it"
-  "toxic"       true (signal predicts rejection)
-  "code"        Python function BODY ONLY (no def line). msgs = messages in this round.
-                Do NOT use get_early_pct. Use msgs directly.
-                Must return True (signal present) or False.
+Propose 3 NEW hypotheses. Include at least one TOXIC (predicts rejection) and
+one HEALTHY (predicts acceptance). Each should be:
+- Simple: one clear condition about agent behavior
+- Different from each other (don't propose variations of the same idea)
+- Testable: a Python function that checks msgs and returns True/False
 
-Output ONLY a JSON array of these objects, nothing else.
+For each, output a JSON object:
+  "id"          short snake_case name
+  "description" one sentence starting with "[TOXIC] Agent ..." or "[HEALTHY] Agent ..."
+  "toxic"       true if signal predicts rejection, false if it predicts acceptance
+  "code"        Python function BODY (no def line). Variable `msgs` is available.
+                Use iter_tool_calls(msgs) and iter_tool_results(msgs).
+                Must return bool. Do NOT use get_early_pct.
+
+Output ONLY a JSON array of 3 objects, nothing else.
 """)
 
 
@@ -198,11 +235,28 @@ def _build_hypothesis(obj: dict) -> Hypothesis | None:
     toxic = bool(obj.get("toxic", True))
     code = obj.get("code", "")
 
+    if not code or not code.strip():
+        print(f"  [propose] empty code for hypothesis '{hid}'")
+        return None
+
+    # Normalize: strip markdown fences
+    code = re.sub(r"^```(?:python)?\n?", "", code.strip())
+    code = re.sub(r"\n?```$", "", code.strip())
+
+    # If code is a bare body (no def line), wrap it
     if not code.lstrip().startswith("def "):
-        indented = textwrap.indent(textwrap.dedent(code), "    ")
+        # Ensure the body has a return statement
+        lines = code.strip().split("\n")
+        has_return = any(l.strip().startswith("return ") for l in lines)
+        if not has_return:
+            # Last line might be an expression — wrap as return
+            last = lines[-1].strip()
+            if last and not last.startswith(("#", "if ", "for ", "while ")):
+                lines[-1] = f"return {last}"
+        indented = textwrap.indent(textwrap.dedent("\n".join(lines)), "    ")
         src = f"def _feature(msgs):\n{indented}\n"
     else:
-        src = code
+        src = textwrap.dedent(code)
 
     ns = dict(_SANDBOX_GLOBALS)
     try:
@@ -216,9 +270,13 @@ def _build_hypothesis(obj: dict) -> Hypothesis | None:
                     break
         if not callable(fn):
             raise ValueError("No callable found after exec")
-        fn([])  # smoke test
+        # Smoke test: must handle empty msgs without crashing
+        result = fn([])
+        if not isinstance(result, bool):
+            result = bool(result)  # coerce to bool
     except Exception as e:
         print(f"  [propose] failed to compile hypothesis '{hid}': {e}")
+        traceback.print_exc()
         return None
 
     return Hypothesis(id=hid, description=desc, feature_fn=fn, toxic=toxic, code_src=src)
@@ -257,11 +315,19 @@ def propose_new(
         return []
 
     hypotheses = []
+    seen_ids = set(existing_ids or [])
     for obj in objects:
         h = _build_hypothesis(obj)
-        if h:
-            hypotheses.append(h)
-            print(f"  [propose] ok  '{h.id}': {h.description}")
+        if h is None:
+            continue
+        # Deduplicate by ID (exact or suffix match)
+        if h.id in seen_ids or any(h.id.endswith(eid) or eid.endswith(h.id) for eid in seen_ids):
+            print(f"  [propose] skip '{h.id}': duplicate of existing hypothesis")
+            continue
+        seen_ids.add(h.id)
+        hypotheses.append(h)
+        direction = "toxic" if h.toxic else "healthy"
+        print(f"  [propose] ok  '{h.id}' ({direction}): {h.description}")
     return hypotheses
 
 

@@ -362,13 +362,33 @@ from typing import Iterator
 # ---------------------------------------------------------------------------
 
 _REJECTION_RE = re.compile(
-    r"(?:^|[\s,\.!?])"
-    r"(no[,\s]|nope|wrong|incorrect|not right|not what i (want|asked|meant|said)"
-    r"|that'?s (wrong|not|incorrect)|you (missed|forgot|broke|got it wrong)"
-    r"|undo|revert|that didn'?t work|still (broken|wrong|not working|failing)"
-    r"|this is (wrong|incorrect|not right|broken)|doesn'?t work|did not work"
-    r"|not working|that'?s not (right|what|it|correct))"
-    r"(?:[\s,\.!?]|$)",
+    r"(?:^|[\s,\.!?;:\-])"
+    r"("
+    r"no[,\.\s!]|nope|wrong|incorrect|not right"
+    r"|not what i (want|asked|meant|said|need)"
+    r"|that'?s (wrong|not|incorrect|broken|bad)"
+    r"|you (missed|forgot|broke|got it wrong|shouldn'?t|should not)"
+    r"|undo|revert|roll ?back|put it back|restore"
+    r"|that didn'?t work|still (broken|wrong|not working|failing|doesn)"
+    r"|this is (wrong|incorrect|not right|broken)"
+    r"|doesn'?t work|did not work|not working|isn'?t (right|correct|working)"
+    r"|that'?s not (right|what|it|correct)"
+    r"|stop|wait|hold on|don'?t do that|why did you"
+    r"|i (said|asked|told you|meant) (not|no|don)"
+    r"|that'?s the opposite"
+    r"|request interrupted"
+    r")"
+    r"(?:[\s,\.!?;:\-]|$)",
+    re.IGNORECASE,
+)
+
+_FALSE_POSITIVE_RE = re.compile(
+    r"(no (need|worries|problem|rush|pressure|thanks|thank)"
+    r"|not (sure|yet|now|necessarily|a big deal)"
+    r"|stop (the|and|here|it from|running)"
+    r"|wait (for|until|a moment)"
+    r"|no i (mean|think|was)"
+    r"|hold on (let me|i need))",
     re.IGNORECASE,
 )
 
@@ -441,7 +461,9 @@ def parse_rounds(filepath: Path) -> list[dict]:
     for rn, start in enumerate(user_idx):
         end = user_idx[rn + 1] if rn + 1 < len(user_idx) else len(messages)
         next_msg = messages[user_idx[rn + 1]]["content"] if rn + 1 < len(user_idx) else None
-        rejected = next_msg is not None and bool(_REJECTION_RE.search(next_msg))
+        rejected = (next_msg is not None
+                    and bool(_REJECTION_RE.search(next_msg))
+                    and not bool(_FALSE_POSITIVE_RE.search(next_msg)))
         rounds.append({{
             "round_id": f"{{filepath.stem}}:{{rn}}",
             "msgs": messages[start + 1 : end],
