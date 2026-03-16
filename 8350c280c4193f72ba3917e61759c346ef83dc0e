@@ -1,0 +1,63 @@
+src/hypoGen/submitter.py
+  ac6a04310ebac796 365-391,464-466
+docs/reference.md
+  ac6a04310ebac796 20-21,32-38,58-71,217,242-299
+src/hypoGen/generator/propose.py
+  ac6a04310ebac796 45-47,49,51-57,59,64,68-69,73-76,78-79,81-84,92-93,95-98,100-102,104-107,109-113,115-118,121,129-139,141,145-146,161-162,164-165,175-187,189,238-246,248-256,259,273-276,279,318,321-327,329-330
+src/utils/ingestion/codex_reader.py
+  ac6a04310ebac796 26,133-135
+src/main.py
+  ac6a04310ebac796 85-86,99,385-386,399,464-467,485-489,513-516,533,536
+src/analyzeme/stats.py
+  ac6a04310ebac796 1-357
+src/analyzeme/renderer.py
+  ac6a04310ebac796 1-476
+src/hypoGen/labeler.py
+  ac6a04310ebac796 18-22,24-59,80-82
+README.md
+  ac6a04310ebac796 20-21,31,35-36,39-45,47,49-54,56-72,88-114
+src/analyzeme/run.py
+  ac6a04310ebac796 1-84
+src/hypoGen/run_pipeline.py
+  ac6a04310ebac796 4-7,9-10,18,29-30,41-42,44-45,57-58,60-63,65-66,69-71,73-78,80-99,101,103,105-108,110-111,114-177,188,190-193,204,207-209,212,214-228,233,237,241,254-258,262-263,277-285,287,290-291,294,297-300,311
+src/hypoGen/verifier/verify.py
+  ac6a04310ebac796 55-56,85-93,95-126
+src/hypoGen/existing_hypothesis/seed_features.py
+  ac6a04310ebac796 137-260,279-289
+src/contextEngineering/config.py
+  ac6a04310ebac796 28
+src/contextEngineering/reflector.py
+  ac6a04310ebac796 13-14,16-23,30-33,37,39-44
+src/contextEngineering/curator.py
+  ac6a04310ebac796 17-18,21-22,31,35-36,40,49-50,58-59,152-160,162-173,182-183,185
+src/contextEngineering/engine.py
+  ac6a04310ebac796 30-33,44,49,97-110,116
+src/hypoGen/generator/hypothesis.py
+  ac6a04310ebac796 104-106,109,111-112,114
+src/contextEngineering/interactive.py
+  ac6a04310ebac796 1-111
+src/hypoGen/analyzer/report.py
+  ac6a04310ebac796 19-20,28-29,36-37,84-86,88-93,108-117,121-122,127,129-130,132,134-135,141-148,152-179,183,185
+src/utils/ingestion/base.py
+  ac6a04310ebac796 12-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "8350c280c4193f72ba3917e61759c346ef83dc0e",
+  "prompts": {
+    "ac6a04310ebac796": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2bff978-392b-4e01-aa31-abb56f49e1c7",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Hanchenli <lihanc2002@gmail.com>",
+      "messages": [],
+      "total_additions": 2264,
+      "total_deletions": 498,
+      "accepted_lines": 2005,
+      "overriden_lines": 0
+    }
+  }
+}
