@@ -7,7 +7,7 @@ const STEPS = [
   {
     step: "1",
     title: "Install",
-    code: "git clone \nhttps://github.com/Hanchenli/RetroCode\ncd RetroCode && pip install -e .",
+    code: "git clone \nhttps://github.com/RetroCode-Org/RetroCode\ncd RetroCode && pip install -e .",
   },
   {
     step: "2",

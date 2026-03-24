@@ -51,7 +51,7 @@ export default function Home() {
               variant="secondary"
               className="border border-border hover:bg-accent transition-colors"
             >
-              <a href="https://github.com/Hanchenli/RetroCode">
+              <a href="https://github.com/RetroCode-Org/RetroCode">
                 View on GitHub
               </a>
             </Button>
