@@ -24,4 +24,6 @@ website/node_modules
 website/.next
 website/out
 
+skillsbench-reference-website
+
 .gitignore
