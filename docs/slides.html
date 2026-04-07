@@ -518,8 +518,8 @@ All readers subclass <span class="c-hi">BaseReader</span> in
   <div class="section-num">03</div>
   <h2>Hypothesis Generation</h2>
   <div class="divider"></div>
-  <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.4em;">Chi-squared tests on agent behavior patterns. Real output:</p>
-  <div class="term">
+  <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.4em;">Chi-squared tests on agent behavior. Find what predicts rejection, then share with the community:</p>
+  <div class="term" style="max-width:860px;">
     <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">retro --hypogen --dir .</span></div>
     <div class="term-body" style="font-size:0.78rem;">[retro] Found 47 session traces
 [retro] Parsed 312 rounds across 47 sessions
@@ -530,7 +530,6 @@ All readers subclass <span class="c-hi">BaseReader</span> in
   <span class="c-sig">[sig]</span>  <span class="c-id">repeated_bash_errors      </span>  p=<span class="c-val">0.0042</span>  OR=<span class="c-val">3.12</span>  n+=15  n-=297
   <span class="c-sig">[sig]</span>  <span class="c-id">edit_without_search       </span>  p=<span class="c-val">0.0187</span>  OR=<span class="c-val">1.89</span>  n+=41  n-=271
   <span class="c-ns">[n/s]</span>  <span class="c-id">more_edits_than_reads     </span>  p=<span class="c-dim">0.2100</span>  OR=<span class="c-dim">1.32</span>  n+=38  n-=274
-  <span class="c-ns">[n/s]</span>  <span class="c-id">many_files_edited         </span>  p=<span class="c-dim">0.4500</span>  OR=<span class="c-dim">1.11</span>  n+=12  n-=300
 
 [retro] Iteration 1 — proposing new hypotheses (LLM)
   <span class="c-sig">[sig]</span>  <span class="c-id">long_bash_without_check   </span>  p=<span class="c-val">0.0290</span>  OR=<span class="c-val">2.01</span>  n+=19  n-=293
@@ -538,12 +537,74 @@ All readers subclass <span class="c-hi">BaseReader</span> in
   <span class="c-hi">&#x2192; Agents that edit without reading are 2.4x more likely to be rejected</span>
   <span class="c-hi">&#x2192; Repeated Bash errors predict 3.1x higher rejection rate</span></div>
   </div>
-  <div style="display:flex; gap:16px; margin-top:0.5em; justify-content:center;">
-    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --submit</code>
-    <span style="color:var(--dim);">&bull;</span>
-    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --pull</code>
-    <span style="color:var(--dim);">&bull;</span>
-    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --contribute</code>
+</div>
+
+<!-- ===================== SLIDE 10b: Community Contribution ===================== -->
+<div class="slide">
+  <h2>Community Hypothesis Pool</h2>
+  <div class="divider"></div>
+  <p style="font-size:0.95rem; max-width:700px; margin-bottom:0.6em;">Discoveries are stronger when verified across many codebases.<br>RetroCode makes contributing <strong style="color:var(--text);">one command away</strong>.</p>
+  <div class="flow" style="margin-bottom:0.5em;">
+    <div class="flow-box">You discover a pattern<small>retro --hypogen</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box hl">Submit to the pool<small>retro --submit &rarr; opens a PR</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Others verify it<small>retro --pull on their traces</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Contribute stats back<small>retro --contribute</small></div>
+  </div>
+  <div class="two-col" style="max-width:880px; margin-top:0.5em;">
+    <div class="term" style="margin:0;">
+      <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">retro --submit</span></div>
+      <div class="term-body" style="font-size:0.75rem;">[retro] 3 significant hypotheses found
+
+  <span class="c-sig">[1]</span> edit_without_read       OR=2.45  p=0.003
+  <span class="c-sig">[2]</span> repeated_bash_errors    OR=3.12  p=0.004
+  <span class="c-sig">[3]</span> long_bash_without_check OR=2.01  p=0.029
+
+  Submit which? (1,2,3 or 'a' for all): <span class="c-hi">a</span>
+
+[retro] Forking RetroCode-Org/swe-hypotheses...
+[retro] Writing hypotheses/edit_without_read.md
+[retro] Writing hypotheses/edit_without_read.py
+[retro] PR created: <span class="c-val">#42</span> &#x2714;</div>
+    </div>
+    <div class="term" style="margin:0;">
+      <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">retro --pull &nbsp;&amp;&amp;&nbsp; retro --contribute</span></div>
+      <div class="term-body" style="font-size:0.75rem;"><span class="c-cmt"># Download community hypotheses</span>
+<span class="c-cmt"># and verify against YOUR traces:</span>
+[retro] Pulled 28 community hypotheses
+[retro] Verifying against 312 local rounds...
+
+  <span class="c-sig">[confirmed]</span> edit_without_read
+    Your data:  OR=2.31  p=0.009
+    Community:  OR=2.45  (n=1,847 rounds)
+
+  <span class="c-ns">[not confirmed]</span> many_files_edited
+    Your data:  OR=0.94  p=0.820
+
+<span class="c-cmt"># Share your verification stats back:</span>
+[retro] Contributing stats to swe-hypotheses...
+[retro] PR created: <span class="c-val">#58</span> &#x2714;</div>
+    </div>
+  </div>
+  <div style="margin-top:0.6em; display:flex; gap:20px; justify-content:center; align-items:center; flex-wrap:wrap;">
+    <div style="font-size:0.85rem; color:var(--muted);">Community repo:</div>
+    <code style="font-size:0.8rem;">github.com/RetroCode-Org/swe-hypotheses</code>
+  </div>
+  <div class="cards cards-3" style="max-width:750px; margin-top:0.6em;">
+    <div class="card" style="text-align:center; padding:14px;">
+      <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--blue); font-weight:700; margin-bottom:4px;">Discover</div>
+      <code style="font-size:0.75rem;">retro --hypogen</code>
+    </div>
+    <div class="card" style="text-align:center; padding:14px;">
+      <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--green); font-weight:700; margin-bottom:4px;">Share</div>
+      <code style="font-size:0.75rem;">retro --submit</code>
+    </div>
+    <div class="card" style="text-align:center; padding:14px;">
+      <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--purple); font-weight:700; margin-bottom:4px;">Verify &amp; Contribute</div>
+      <code style="font-size:0.75rem;">retro --pull / --contribute</code>
+    </div>
   </div>
 </div>
 
@@ -707,7 +768,7 @@ sources:
 <!-- Navigation -->
 <div class="nav">
   <button onclick="prev()" title="Left arrow">&#8592;</button>
-  <span class="nav-count" id="counter">1 / 16</span>
+  <span class="nav-count" id="counter">1 / 17</span>
   <button onclick="next()" title="Right arrow">&#8594;</button>
 </div>
 <div class="progress" id="progress"></div>
