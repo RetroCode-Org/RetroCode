@@ -149,11 +149,20 @@ retro --import-skills --dir .       # imports from .retro/skills/ → .claude/sk
 |---|---|---|
 | **Local-first** *(default)* | `--strategy local-first` | Keep your local version, skip shared |
 | **Retro-first** | `--strategy retro-first` | Overwrite local with shared version |
-| **Merge** | `--strategy merge` | Keep local content, append new sections from shared |
+| **Merge** | `--strategy merge` | Smart merge: union tools, merge unique items within sections, pick longer descriptions |
+| **Interactive** | `--strategy interactive` | Per-skill prompt: see diff, choose keep/take/merge |
+
+The **merge** strategy is content-aware: when both versions have the same section (e.g., `## Steps`), it deduplicates individual bullet points and code blocks instead of skipping or duplicating the whole section. Frontmatter is merged intelligently — `allowed-tools` are unioned, the longer `description` wins, and new keys from the shared version are added.
 
 ```bash
-# Import with merge — best of both worlds
+# Smart merge — deduplicates items, unions tools
 retro --import-skills -i teammate.tar.gz --strategy merge --dir .
+
+# Interactive — see diffs, decide per skill
+retro --import-skills -i teammate.tar.gz --strategy interactive --dir .
+
+# Preview without writing anything
+retro --import-skills --dry-run --dir .
 
 # Import from multiple sources
 retro --import-skills --source /path/to/other/skills --dir .

@@ -4,280 +4,614 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RetroCode — Beginner Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
+    --bg: #08090d;
+    --surface: #12141c;
+    --surface2: #1a1d28;
+    --border: rgba(255,255,255,0.06);
+    --text: #f0f0f5;
+    --muted: #6b7280;
+    --dim: #3a3f4b;
+    --code-bg: #0d1117;
+    --green: #4ade80;
+    --green-dim: #166534;
+    --cyan: #22d3ee;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
     --accent: #e94560;
-    --accent2: #0f3460;
-    --text: #eee;
-    --muted: #888;
-    --code-bg: #16213e;
-    --green: #4ecca3;
-    --yellow: #f9a825;
+    --gradient: linear-gradient(135deg, #e94560, #a78bfa, #22d3ee);
   }
+  html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
-
-  /* Slide container */
+  /* ── Slides ── */
   .deck { height: 100vh; overflow: hidden; position: relative; }
   .slide {
     display: none; flex-direction: column; justify-content: center; align-items: center;
-    height: 100vh; padding: 60px 80px; text-align: center; position: absolute; inset: 0;
-    animation: fadeIn 0.3s ease;
+    height: 100vh; padding: 40px 60px; text-align: center; position: absolute; inset: 0;
+    overflow-y: auto;
   }
-  .slide.active { display: flex; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .slide.active { display: flex; animation: slideIn 0.35s cubic-bezier(.4,0,.2,1); }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(16px) scale(0.99); } to { opacity: 1; transform: none; } }
 
-  /* Typography */
-  h1 { font-size: 3.2rem; font-weight: 800; margin-bottom: 0.5em; background: linear-gradient(135deg, var(--accent), #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  h2 { font-size: 2.4rem; font-weight: 700; margin-bottom: 0.6em; color: var(--text); }
-  h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.4em; color: var(--green); }
-  p, li { font-size: 1.25rem; line-height: 1.7; color: #ccc; }
-  .subtitle { font-size: 1.5rem; color: var(--muted); margin-top: 0.3em; }
-  .big-number { font-size: 5rem; font-weight: 800; color: var(--accent); }
-  .emoji { font-size: 3rem; margin-bottom: 0.5em; }
+  /* ── Typography ── */
+  h1 { font-size: 3.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.4em; }
+  h1.grad { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.4em; }
+  h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3em; }
+  p, li { font-size: 1.1rem; line-height: 1.6; color: #b0b4c0; }
+  .subtitle { font-size: 1.3rem; color: var(--muted); margin-top: 0.2em; font-weight: 400; }
+  .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-block; }
+  .label-green { background: rgba(74,222,128,0.12); color: var(--green); }
+  .label-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .label-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+  .label-pink { background: rgba(244,114,182,0.12); color: var(--pink); }
+  .label-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
 
-  /* Lists */
+  /* ── Lists ── */
   ul { text-align: left; max-width: 800px; margin: 0 auto; }
-  li { margin-bottom: 0.6em; list-style: none; padding-left: 1.5em; position: relative; }
-  li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  li { margin-bottom: 0.55em; list-style: none; padding-left: 1.8em; position: relative; font-size: 1.1rem; }
+  li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 
-  /* Code */
-  code { background: var(--code-bg); padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.95em; }
-  pre { background: var(--code-bg); border-radius: 12px; padding: 24px 32px; text-align: left; max-width: 850px; width: 100%; margin: 1em auto; overflow-x: auto; border: 1px solid #2a2a4a; }
-  pre code { background: none; padding: 0; font-size: 1.05rem; line-height: 1.6; color: #a8d8ea; }
-  .cmd { color: var(--green); }
-  .flag { color: var(--yellow); }
-  .comment { color: #666; }
+  /* ── Code ── */
+  code { background: var(--code-bg); padding: 2px 7px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; border: 1px solid var(--border); }
+  pre { background: var(--code-bg); border-radius: 10px; padding: 18px 24px; text-align: left; max-width: 880px; width: 100%; margin: 0.6em auto; overflow-x: auto; border: 1px solid var(--border); }
+  pre code { background: none; padding: 0; border: none; font-size: 0.88rem; line-height: 1.55; color: #c9d1d9; }
+  .c-cmd { color: var(--green); }
+  .c-flag { color: var(--yellow); }
+  .c-cmt { color: #484f58; }
+  .c-str { color: #a5d6ff; }
+  .c-sig { color: var(--green); font-weight: 700; }
+  .c-ns { color: #484f58; }
+  .c-id { color: var(--yellow); }
+  .c-val { color: var(--cyan); }
+  .c-hdr { color: var(--pink); font-weight: 700; }
+  .c-bid { color: var(--purple); font-weight: 600; }
+  .c-hi { color: #f0f0f5; font-weight: 600; }
+  .c-dim { color: #484f58; }
+  .c-sk { color: var(--yellow); font-weight: 600; }
 
-  /* Cards */
-  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 900px; width: 100%; margin-top: 1em; }
+  /* ── Cards ── */
+  .cards { display: grid; gap: 14px; max-width: 920px; width: 100%; margin-top: 0.6em; }
+  .cards-2 { grid-template-columns: 1fr 1fr; }
+  .cards-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cards-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
   .card {
-    background: var(--surface); border-radius: 12px; padding: 24px; text-align: left;
-    border: 1px solid #2a2a4a; transition: border-color 0.2s;
+    background: var(--surface); border-radius: 14px; padding: 22px; text-align: left;
+    border: 1px solid var(--border); transition: border-color 0.25s, transform 0.25s;
   }
-  .card:hover { border-color: var(--accent); }
-  .card h3 { margin-bottom: 0.3em; }
-  .card p { font-size: 1rem; color: #aaa; }
+  .card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+  .card h3 { margin-bottom: 6px; }
+  .card p { font-size: 0.9rem; color: #6b7280; line-height: 1.5; }
+  .card-icon { font-size: 1.6rem; margin-bottom: 8px; }
 
-  /* Flow diagram */
-  .flow { display: flex; align-items: center; gap: 12px; margin: 1em 0; flex-wrap: wrap; justify-content: center; }
+  /* ── Flow ── */
+  .flow { display: flex; align-items: center; gap: 10px; margin: 0.6em 0; flex-wrap: wrap; justify-content: center; }
   .flow-box {
-    background: var(--surface); border: 1px solid #2a2a4a; border-radius: 10px;
-    padding: 14px 22px; font-size: 1rem; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 18px; font-size: 0.9rem; font-weight: 600; line-height: 1.3;
   }
-  .flow-arrow { color: var(--accent); font-size: 1.5rem; }
-  .flow-box.highlight { border-color: var(--accent); background: #1a0a1e; }
+  .flow-box small { display: block; font-size: 0.72rem; color: var(--muted); font-weight: 400; margin-top: 2px; }
+  .flow-arrow { color: var(--accent); font-size: 1.3rem; }
+  .flow-box.hl { border-color: var(--accent); box-shadow: 0 0 20px rgba(233,69,96,0.1); }
 
-  /* Table */
-  table { border-collapse: collapse; margin: 1em auto; max-width: 800px; width: 100%; }
-  th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid #2a2a4a; font-size: 1.05rem; }
-  th { color: var(--green); font-weight: 600; }
-  td { color: #bbb; }
-  td code { font-size: 0.9rem; }
+  /* ── Table ── */
+  table { border-collapse: collapse; margin: 0.6em auto; max-width: 820px; width: 100%; }
+  th, td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  th { color: var(--green); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  td { color: #9ca3af; }
 
-  /* Navigation */
+  /* ── Terminal ── */
+  .term { background: var(--code-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; max-width: 900px; width: 100%; margin: 0.5em auto; }
+  .term-bar { background: var(--surface); padding: 8px 14px; display: flex; gap: 6px; align-items: center; border-bottom: 1px solid var(--border); }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.r { background: #ff5f56; } .term-dot.y { background: #ffbd2e; } .term-dot.g { background: #27c93f; }
+  .term-title { color: #484f58; font-size: 0.75rem; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
+  .term-body { padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.55; color: #c9d1d9; white-space: pre; overflow-x: auto; }
+
+  /* ── Wrapped cards ── */
+  .wr { border-radius: 16px; padding: 22px; text-align: left; border: 1px solid rgba(255,255,255,0.08); }
+  .wr-dark { background: linear-gradient(135deg, rgba(15,12,41,0.95), rgba(48,43,99,0.6)); }
+  .wr h3 { color: var(--cyan); font-size: 1rem; margin-bottom: 10px; }
+  .wr-stat { font-size: 2rem; font-weight: 800; }
+  .wr-label { font-size: 0.75rem; color: var(--muted); }
+  .bar-row { display: flex; align-items: center; margin: 4px 0; gap: 6px; }
+  .bar-lbl { width: 56px; font-size: 0.75rem; color: #9ca3af; font-family: 'JetBrains Mono', monospace; }
+  .bar-track { flex: 1; height: 14px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.animated { width: 0 !important; }
+  .bar-val { width: 40px; font-size: 0.75rem; color: #6b7280; text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .meter { height: 14px; background: rgba(255,255,255,0.06); border-radius: 7px; overflow: hidden; margin: 6px 0; }
+  .meter-fill { height: 100%; border-radius: 7px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .meter-fill.animated { width: 0 !important; }
+
+  /* ── Nav ── */
   .nav {
-    position: fixed; bottom: 20px; right: 30px; display: flex; gap: 10px; z-index: 100;
-    background: var(--surface); padding: 8px 12px; border-radius: 8px; border: 1px solid #2a2a4a;
+    position: fixed; bottom: 16px; right: 24px; display: flex; gap: 8px; z-index: 100;
+    background: var(--surface); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
+    backdrop-filter: blur(8px);
   }
   .nav button {
-    background: var(--code-bg); border: 1px solid #2a2a4a; color: var(--text); padding: 8px 16px;
-    border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 14px;
+    border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: inherit; font-weight: 500;
+    transition: border-color 0.2s;
   }
   .nav button:hover { border-color: var(--accent); }
-  .progress { position: fixed; bottom: 0; left: 0; height: 3px; background: var(--accent); transition: width 0.3s; }
+  .nav-count { padding: 7px 10px; color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .progress { position: fixed; bottom: 0; left: 0; height: 2px; background: var(--gradient); transition: width 0.3s; }
 
-  /* Section divider */
-  .divider { width: 60px; height: 4px; background: var(--accent); border-radius: 2px; margin: 0.8em auto; }
+  .divider { width: 50px; height: 3px; background: var(--gradient); border-radius: 2px; margin: 0.5em auto; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 960px; text-align: left; align-items: start; }
+  .spacer { height: 0.8em; }
 
-  /* Two-column */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; text-align: left; align-items: start; }
+  /* ── Section slide ── */
+  .section-num { font-size: 6rem; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0.3; line-height: 1; }
+
+  /* ── Before / After ── */
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 920px; width: 100%; }
+  .ba-col { border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+  .ba-before { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.15); }
+  .ba-after { background: rgba(74,222,128,0.04); border-color: rgba(74,222,128,0.15); }
+  .ba-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px; }
+
+  /* ── Keyboard hints ── */
+  .kbd { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); vertical-align: middle; }
+
+  /* Fact strip */
+  .fact { border-left: 3px solid var(--purple); padding: 4px 0 4px 12px; margin: 5px 0; font-size: 0.8rem; color: #9ca3af; line-height: 1.4; }
 </style>
 </head>
 <body>
 
 <div class="deck" id="deck">
 
-<!-- Slide 1: Title -->
-<div class="slide active" id="s0">
-  <h1>RetroCode</h1>
-  <p class="subtitle">Turn your AI coding sessions into reusable knowledge</p>
-  <div style="margin-top:2em; color:var(--muted); font-size:1rem;">
-    Works with Claude Code, Cursor, and Codex<br>
-    Supports OpenAI, Anthropic, Gemini, CommonStack
+<!-- ===================== SLIDE 1: Title ===================== -->
+<div class="slide active">
+  <div style="margin-bottom:1.2em;">
+    <div style="font-size:0.8rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; font-weight:600; margin-bottom:0.8em;">Introducing</div>
+    <h1 class="grad" style="font-size:4.5rem; margin-bottom:0.15em;">RetroCode</h1>
+    <p class="subtitle" style="font-size:1.4rem;">Your AI agent learns from its mistakes.<br>Automatically.</p>
+  </div>
+  <div class="cards cards-4" style="max-width:720px; margin-top:1.5em;">
+    <div style="text-align:center;"><span class="label label-green">Playbook</span></div>
+    <div style="text-align:center;"><span class="label label-purple">Skills</span></div>
+    <div style="text-align:center;"><span class="label label-blue">Hypotheses</span></div>
+    <div style="text-align:center;"><span class="label label-pink">Wrapped</span></div>
+  </div>
+  <div style="margin-top:2.5em; font-size:0.8rem; color:var(--dim);">
+    Claude Code &bull; Cursor &bull; Codex &nbsp;|&nbsp; OpenAI &bull; Anthropic &bull; Gemini &bull; CommonStack
   </div>
 </div>
 
-<!-- Slide 2: The Problem -->
-<div class="slide" id="s1">
-  <div class="emoji">&#x1F914;</div>
-  <h2>The Problem</h2>
+<!-- ===================== SLIDE 2: Before / After ===================== -->
+<div class="slide">
+  <h2>The Problem &rarr; The Fix</h2>
   <div class="divider"></div>
-  <ul>
-    <li>AI agents make the same mistakes across sessions</li>
-    <li>Corrections you give are lost when the session ends</li>
-    <li>Teammates repeat the same trial-and-error with their agents</li>
-    <li>No way to measure what's actually working (or failing)</li>
-  </ul>
-</div>
+  <div class="ba">
+    <div class="ba-col ba-before">
+      <div class="ba-tag" style="color:var(--red);">Without RetroCode</div>
+      <div class="term" style="margin:0; border-color:rgba(248,113,113,0.15);">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">session 1</span></div>
+        <div class="term-body" style="font-size:0.72rem;"><span style="color:var(--blue);">[user]</span> Fix the auth bug
+<span style="color:var(--muted);">[agent]</span> I'll edit auth.py directly...
+<span style="color:var(--red);">[user]</span> No! Read it first. You broke
+  the existing logic.
 
-<!-- Slide 3: The Solution -->
-<div class="slide" id="s2">
-  <div class="emoji">&#x1F680;</div>
-  <h2>RetroCode Turns Sessions Into Knowledge</h2>
-  <div class="divider"></div>
-  <div class="card-grid">
-    <div class="card">
-      <h3>Playbook Generation</h3>
-      <p>Learns rules from your corrections and writes them into your agent's config files</p>
+<span class="c-dim">── 3 days later, different session ──</span>
+
+<span style="color:var(--blue);">[user]</span> Fix the payment bug
+<span style="color:var(--muted);">[agent]</span> I'll edit payment.py...
+<span style="color:var(--red);">[user]</span> No! Same mistake again!
+  You didn't read the file!</div>
+      </div>
+      <p style="font-size:0.85rem; margin-top:12px; color:var(--red);">Same corrections. Every session. Lost forever.</p>
     </div>
-    <div class="card">
-      <h3>Skills Sharing</h3>
-      <p>Export repo-specific agent skills and share with teammates</p>
-    </div>
-    <div class="card">
-      <h3>Hypothesis Testing</h3>
-      <p>Statistically identifies which agent behaviors predict rejection</p>
-    </div>
-    <div class="card">
-      <h3>AnalyzeMe</h3>
-      <p>Spotify Wrapped for your AI coding &mdash; personas, habits, fun stats</p>
+    <div class="ba-col ba-after">
+      <div class="ba-tag" style="color:var(--green);">With RetroCode</div>
+      <div class="term" style="margin:0; border-color:rgba(74,222,128,0.15);">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">CLAUDE.md (auto-generated)</span></div>
+        <div class="term-body" style="font-size:0.72rem;"><span class="c-hdr">## CODING_PATTERNS</span>
+<span class="c-bid">[coding-00004]</span> Always Read a file
+  before editing it to avoid overwriting
+  existing logic.
+
+<span class="c-hdr">## COMMON_MISTAKES</span>
+<span class="c-bid">[mistake-00009]</span> Validate provider
+  config on startup before daemonizing.</div>
+      </div>
+      <div class="term" style="margin:8px 0 0 0; border-color:rgba(74,222,128,0.15);">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">session 2 (auto-corrected)</span></div>
+        <div class="term-body" style="font-size:0.72rem;"><span style="color:var(--blue);">[user]</span> Fix the payment bug
+<span style="color:var(--muted);">[agent]</span> I'll read payment.py first...
+  Found the issue on line 42. Fixed.
+<span style="color:var(--green);">[user]</span> Perfect. &#x2714;</div>
+      </div>
+      <p style="font-size:0.85rem; margin-top:12px; color:var(--green);">Learns once. Applies forever. Across all sessions.</p>
     </div>
   </div>
 </div>
 
-<!-- Slide 4: How It Works -->
-<div class="slide" id="s3">
-  <h2>How Playbook Generation Works</h2>
+<!-- ===================== SLIDE 3: Overview ===================== -->
+<div class="slide">
+  <h2>Four Capabilities</h2>
   <div class="divider"></div>
-  <div class="flow">
-    <div class="flow-box">Session Traces<br><span style="font-size:0.8rem;color:var(--muted)">.jsonl files</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-box highlight">Reflector<br><span style="font-size:0.8rem;color:var(--muted)">extracts friction</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-box highlight">Curator<br><span style="font-size:0.8rem;color:var(--muted)">adds/modifies/deletes</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-box">Playbook<br><span style="font-size:0.8rem;color:var(--muted)">CLAUDE.md etc.</span></div>
+  <div class="cards cards-2" style="max-width:820px;">
+    <div class="card">
+      <div class="card-icon">&#x1F4D6;</div>
+      <h3 style="color:var(--green);">Playbook Generation</h3>
+      <p>Extracts rules from misunderstandings in your traces. Writes them into <code>CLAUDE.md</code>, <code>.cursor/rules/</code>, <code>AGENTS.md</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F91D;</div>
+      <h3 style="color:var(--purple);">Skills Sharing</h3>
+      <p>Auto-generates repo-specific agent skills. Bundle &amp; share with teammates via <code>-o</code> / <code>-i</code> flags.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F52C;</div>
+      <h3 style="color:var(--blue);">Hypothesis Testing</h3>
+      <p>Chi-squared tests on agent behavior patterns. Finds what predicts rejection with p-values and odds ratios.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F3B5;</div>
+      <h3 style="color:var(--pink);">AnalyzeMe Wrapped</h3>
+      <p>Spotify-style coding stats: persona, toolkit, schedule, patience score, fun facts. Zero LLM calls.</p>
+    </div>
   </div>
-  <p style="margin-top:1.5em; max-width:700px;">Every rule stems from <strong>real friction</strong> &mdash; corrections, wrong assumptions, over-engineering. Not generic advice.</p>
 </div>
 
-<!-- Slide 5: Quickstart -->
-<div class="slide" id="s4">
-  <h2>Quickstart</h2>
+<!-- ===================== SLIDE 4: Pipeline ===================== -->
+<div class="slide">
+  <div class="section-num">01</div>
+  <h2>Playbook Generation</h2>
   <div class="divider"></div>
-  <pre><code><span class="comment"># 1. Install</span>
-<span class="cmd">git clone</span> https://github.com/RetroCode-Org/RetroCode
-<span class="cmd">cd</span> RetroCode && <span class="cmd">pip install</span> -e .
-
-<span class="comment"># 2. Set your API key</span>
-<span class="cmd">export</span> COMMONSTACK_API_KEY=your_key_here
-
-<span class="comment"># 3. Go to your project and run</span>
-<span class="cmd">cd</span> ~/my-project
-<span class="cmd">retro</span> <span class="flag">--offline --dir .</span></code></pre>
-  <p style="margin-top:1em;">That's it. Your <code>CLAUDE.md</code> now has learned rules.</p>
+  <div class="flow" style="margin-top:0.5em;">
+    <div class="flow-box">Session Traces<small>.jsonl from Claude/Cursor/Codex</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box hl">Reflector<small>LLM extracts friction points</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box hl">Curator<small>ADD / MODIFY / DELETE ops</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Playbook<small>Numbered bullets in sections</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Writers<small>CLAUDE.md, .mdc, AGENTS.md</small></div>
+  </div>
+  <p style="margin-top:1em; max-width:650px; font-size:1rem;">Every rule stems from <strong style="color:var(--text);">real friction</strong> &mdash; corrections, wrong assumptions, communication breakdowns. Max 40 bullets, auto-consolidated.</p>
 </div>
 
-<!-- Slide 6: Running Modes -->
-<div class="slide" id="s5">
-  <h2>Running Modes</h2>
+<!-- ===================== SLIDE 5: Real Playbook ===================== -->
+<div class="slide">
+  <h2>Real Output: The Playbook</h2>
   <div class="divider"></div>
-  <table>
-    <tr><th>Mode</th><th>Command</th><th>Behavior</th></tr>
-    <tr><td>One-pass</td><td><code>retro --offline</code></td><td>Process all new sessions, update playbook, exit</td></tr>
-    <tr><td>Interactive</td><td><code>retro --offline --verbose</code></td><td>Review each change before applying</td></tr>
-    <tr><td>Daemon</td><td><code>retro --up</code></td><td>Background polling &mdash; auto-updates continuously</td></tr>
-    <tr><td>Debug</td><td><code>retro --foreground</code></td><td>Daemon in foreground &mdash; see all output live</td></tr>
-  </table>
-  <p style="margin-top:1em; color:var(--muted);">Stop the daemon with <code>retro --down</code></p>
+  <p style="margin-bottom:0.4em; font-size:0.85rem; color:var(--muted);">Actual rules auto-generated from real RetroCode development sessions:</p>
+  <div class="term">
+    <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">CLAUDE.md &mdash; between &lt;!-- retro:start/end --&gt; markers</span></div>
+    <div class="term-body"><span class="c-hdr">## CODING_PATTERNS</span>
+<span class="c-bid">[coding-00018]</span> Introduce a cross-trace action-extraction layer that normalizes
+  tool usage into a common event stream; keep features source-agnostic.
+<span class="c-bid">[coding-00016]</span> Do not bypass ingestion adapters: define a single canonical schema
+  produced by all readers; require all analytics to consume only that schema.
+<span class="c-bid">[coding-00004]</span> Default early to a plugin architecture: ABC + registration/factory.
+
+<span class="c-hdr">## WORKFLOW_STRATEGIES</span>
+<span class="c-bid">[workflow-00013]</span> Add a "Definitions &amp; acceptance tests" checkpoint before building
+  analytics pipelines: confirm unit of analysis, label definition, feature window.
+<span class="c-bid">[workflow-00003]</span> Keep a stable CLI surface: precedence = CLI flags > YAML > defaults.
+
+<span class="c-hdr">## COMMON_MISTAKES</span>
+<span class="c-bid">[mistake-00019]</span> Avoid filename-derived session IDs: use (source, session_id) as key.
+<span class="c-bid">[mistake-00010]</span> Avoid brittle daemon detection: verify via /proc/&lt;pid&gt;/cmdline.
+<span class="c-bid">[mistake-00009]</span> Centralize provider/model config and validate on startup.
+
+<span class="c-hdr">## TOOL_USAGE</span>
+<span class="c-bid">[tool-00011]</span> Default to foreground on first run; provide retro status / retro logs.</div>
+  </div>
+  <p style="font-size:0.85rem; color:var(--muted); margin-top:0.3em;">21 rules across 5 sections &mdash; all born from real misunderstandings, not generic advice</p>
 </div>
 
-<!-- Slide 7: Skills Export -->
-<div class="slide" id="s6">
+<!-- ===================== SLIDE 6: Quickstart ===================== -->
+<div class="slide">
+  <h2>Get Running in 60 Seconds</h2>
+  <div class="divider"></div>
+  <pre><code><span class="c-cmt"># 1. Install</span>
+<span class="c-cmd">git clone</span> https://github.com/RetroCode-Org/RetroCode
+<span class="c-cmd">cd</span> RetroCode && <span class="c-cmd">pip install</span> -e .
+
+<span class="c-cmt"># 2. Set your API key (pick one)</span>
+<span class="c-cmd">export</span> COMMONSTACK_API_KEY=<span class="c-str">your_key</span>   <span class="c-cmt"># free credits for members</span>
+<span class="c-cmt"># or: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY</span>
+
+<span class="c-cmt"># 3. Run on your project</span>
+<span class="c-cmd">cd</span> ~/my-project
+<span class="c-cmd">retro</span> <span class="c-flag">--offline --dir .</span>               <span class="c-cmt"># one-pass update</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--offline --verbose --dir .</span>     <span class="c-cmt"># interactive (approve each)</span></code></pre>
+  <div style="margin-top:1.2em; display:flex; gap:24px; justify-content:center; flex-wrap:wrap;">
+    <div><span class="label label-green">One-pass</span> <code style="font-size:0.8rem;">retro --offline</code></div>
+    <div><span class="label label-blue">Daemon</span> <code style="font-size:0.8rem;">retro --up</code></div>
+    <div><span class="label label-purple">Debug</span> <code style="font-size:0.8rem;">retro --foreground</code></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 7: Interactive Mode ===================== -->
+<div class="slide">
+  <h2>Interactive Mode: You Decide</h2>
+  <div class="divider"></div>
+  <p style="margin-bottom:0.4em; font-size:0.9rem; color:var(--muted);">With <code>--verbose</code>, the curator proposes changes and you pick which to keep:</p>
+  <div class="term" style="max-width:750px;">
+    <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">retro --offline --verbose</span></div>
+    <div class="term-body" style="font-size:0.78rem;">[retro] 8 new sessions, 34 rounds
+[retro] Reflecting on 8 conversations (batch_size=4)...
+[retro] Curating 12 insights into playbook...
+
+  Candidates 1-5 of 9:
+
+  <span class="c-sig">[1]</span> <span style="color:var(--green);">+ ADD</span> to CODING_PATTERNS
+      Always read the file before editing to avoid overwriting.
+
+  <span class="c-sig">[2]</span> <span style="color:var(--yellow);">~ MODIFY</span> <span class="c-bid">[coding-00003]</span>
+      Prefer Glob/Grep before editing unfamiliar files.
+
+  <span class="c-sig">[3]</span> <span style="color:var(--red);">- DELETE</span> <span class="c-bid">[mistake-00007]</span>
+      <span class="c-dim">(contradicted by newer insight)</span>
+
+  <span class="c-sig">[4]</span> <span style="color:var(--green);">+ ADD</span> to TOOL_USAGE
+      Use Agent tool for broad codebase exploration.
+
+  <span class="c-sig">[5]</span> <span style="color:var(--green);">+ ADD</span> to COMMON_MISTAKES
+      Never use filename paths as deduplication keys.
+
+  Enter numbers to keep (e.g. 1,2,4), 'a' all, 's' skip, 'q' quit:
+  > <span class="c-hi">1,2,4,5</span>
+
+[retro] Playbook updated: +3 added, -1 deleted
+[retro] claude-code rules updated: CLAUDE.md</div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 8: Skills ===================== -->
+<div class="slide">
+  <div class="section-num">02</div>
   <h2>Skills Sharing</h2>
   <div class="divider"></div>
   <div class="flow">
-    <div class="flow-box">Dev A<br><span style="font-size:0.8rem;color:var(--muted)">export-skills</span></div>
+    <div class="flow-box">Dev A<small>retro --export-skills -o</small></div>
     <div class="flow-arrow">&rarr;</div>
-    <div class="flow-box highlight">.tar.gz<br><span style="font-size:0.8rem;color:var(--muted)">portable bundle</span></div>
+    <div class="flow-box hl">skills.tar.gz<small>portable bundle</small></div>
     <div class="flow-arrow">&rarr;</div>
-    <div class="flow-box">Dev B<br><span style="font-size:0.8rem;color:var(--muted)">import-skills</span></div>
+    <div class="flow-box">Dev B<small>retro --import-skills -i</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">.claude/skills/<small>Claude Code discovers them</small></div>
   </div>
-  <pre style="margin-top:1.5em"><code><span class="comment"># Developer A: generate and bundle</span>
-<span class="cmd">retro</span> <span class="flag">--export-skills -o</span> my-skills.tar.gz
+  <pre style="margin-top:0.6em;"><code><span class="c-cmt"># Generate + bundle</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--export-skills -o</span> my-skills.tar.gz <span class="c-flag">--dir .</span>
 
-<span class="comment"># Developer B: import from the bundle</span>
-<span class="cmd">retro</span> <span class="flag">--import-skills -i</span> my-skills.tar.gz</code></pre>
-  <p style="margin-top:1em; max-width:700px;">Skills encode non-obvious repo knowledge &mdash; extension points, debugging workflows, architectural patterns &mdash; things an agent can't discover alone.</p>
+<span class="c-cmt"># Teammate imports (4 strategies)</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--import-skills -i</span> team.tar.gz                       <span class="c-cmt"># local-first (default)</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--import-skills -i</span> team.tar.gz <span class="c-flag">--strategy merge</span>       <span class="c-cmt"># smart merge</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--import-skills -i</span> team.tar.gz <span class="c-flag">--strategy interactive</span> <span class="c-cmt"># per-skill diff</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--import-skills --dry-run --dir .</span>                    <span class="c-cmt"># preview only</span></code></pre>
 </div>
 
-<!-- Slide 8: Skills Merge Strategies -->
-<div class="slide" id="s7">
-  <h2>Import Merge Strategies</h2>
+<!-- ===================== SLIDE 8b: Smart Merge ===================== -->
+<div class="slide">
+  <h2>Smart Merge In Action</h2>
   <div class="divider"></div>
-  <table>
-    <tr><th>Strategy</th><th>Flag</th><th>What Happens</th></tr>
-    <tr><td>Local-first</td><td><code>--strategy local-first</code></td><td>Keep your version, skip shared (default)</td></tr>
-    <tr><td>Retro-first</td><td><code>--strategy retro-first</code></td><td>Overwrite local with shared version</td></tr>
-    <tr><td>Merge</td><td><code>--strategy merge</code></td><td>Keep local, append new sections from shared</td></tr>
-  </table>
-  <pre style="margin-top:1em"><code><span class="comment"># Merge: best of both worlds</span>
-<span class="cmd">retro</span> <span class="flag">--import-skills -i</span> teammate.tar.gz <span class="flag">--strategy merge</span></code></pre>
+  <div class="two-col" style="max-width:920px;">
+    <div>
+      <h3 style="color:var(--purple);">Content-aware section merge</h3>
+      <p style="font-size:0.9rem; color:var(--muted); margin-bottom:8px;">Same section heading? Unique items are merged, duplicates skipped:</p>
+      <div class="term" style="margin:0;">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">local ## Steps</span></div>
+        <div class="term-body" style="font-size:0.75rem;"><span class="c-hi">## Steps</span>
+- Create the reader file     <span class="c-dim">&larr; kept</span>
+- Register in __init__.py    <span class="c-dim">&larr; kept</span></div>
+      </div>
+      <div style="text-align:center; color:var(--accent); font-size:1.2rem; margin:4px 0;">+ merge</div>
+      <div class="term" style="margin:0;">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">shared ## Steps</span></div>
+        <div class="term-body" style="font-size:0.75rem;"><span class="c-hi">## Steps</span>
+- Create the reader file     <span class="c-dim">&larr; skipped (dupe)</span>
+- Add tool name mappings     <span class="c-sig">&larr; NEW, appended</span>
+- Add config support         <span class="c-sig">&larr; NEW, appended</span></div>
+      </div>
+      <div style="text-align:center; color:var(--green); font-size:1.2rem; margin:4px 0;">=</div>
+      <div class="term" style="margin:0; border-color:rgba(74,222,128,0.2);">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">result</span></div>
+        <div class="term-body" style="font-size:0.75rem;"><span class="c-hi">## Steps</span>
+- Create the reader file
+- Register in __init__.py
+- Add tool name mappings     <span class="c-sig">&#x2714;</span>
+- Add config support         <span class="c-sig">&#x2714;</span></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--cyan);">Smart frontmatter merge</h3>
+      <table style="max-width:100%; font-size:0.85rem;">
+        <tr><th>Field</th><th>Rule</th></tr>
+        <tr><td><code>allowed-tools</code></td><td>Union of both sets</td></tr>
+        <tr><td><code>description</code></td><td>Longer one wins</td></tr>
+        <tr><td><code>paths</code></td><td>Union of glob patterns</td></tr>
+        <tr><td><code>name</code></td><td>Always keep local</td></tr>
+        <tr><td><em>new keys</em></td><td>Added from shared</td></tr>
+      </table>
+      <div class="spacer"></div>
+      <h3 style="color:var(--yellow);">Interactive mode</h3>
+      <div class="term" style="margin:0;">
+        <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">--strategy interactive</span></div>
+        <div class="term-body" style="font-size:0.7rem;">  CONFLICT: add-reader
+  Local:  .claude/skills/add-reader/
+  Shared: bundle:team.tar.gz
+
+<span class="c-dim">--- local/add-reader/SKILL.md</span>
+<span class="c-dim">+++ shared/add-reader/SKILL.md</span>
+<span style="color:var(--red);">- Register in __init__.py</span>
+<span style="color:var(--green);">+ Register in __init__.py + main.py</span>
+<span style="color:var(--green);">+ Add tool name mappings</span>
+
+  [l] Keep local  [s] Take shared
+  [m] Smart merge [d] Show diff
+  > <span class="c-hi">m</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Slide 9: Hypothesis Generation -->
-<div class="slide" id="s8">
+<!-- ===================== SLIDE 9: Real Generated Skills ===================== -->
+<div class="slide">
+  <h2>Real Output: Generated Skills</h2>
+  <div class="divider"></div>
+  <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.4em;">11 skills auto-generated for the RetroCode repo. Each becomes a <code>/command</code> in Claude Code:</p>
+  <div class="two-col">
+    <div class="term" style="margin:0;">
+      <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">.retro/skills/</span></div>
+      <div class="term-body" style="font-size:0.76rem;"><span class="c-sk">/add-reader</span>        <span class="c-dim">Add a new trace reader (ABC)</span>
+<span class="c-sk">/add-provider</span>      <span class="c-dim">Add a new LLM provider</span>
+<span class="c-sk">/add-writer</span>        <span class="c-dim">Add a new output writer</span>
+<span class="c-sk">/add-hypothesis</span>    <span class="c-dim">Add a hypothesis feature fn</span>
+<span class="c-sk">/add-cli-command</span>   <span class="c-dim">Extend the CLI</span>
+<span class="c-sk">/debug-daemon</span>      <span class="c-dim">Troubleshoot the daemon</span>
+<span class="c-sk">/run-tests</span>         <span class="c-dim">Run &amp; debug test suite</span>
+<span class="c-sk">/review-changes</span>    <span class="c-dim">PR review checklist</span>
+<span class="c-sk">/share-skills</span>      <span class="c-dim">Export/import workflow</span>
+<span class="c-dim"> (auto) codebase-guide</span>
+<span class="c-dim"> (auto) context-engineering-pipeline</span></div>
+    </div>
+    <div class="term" style="margin:0;">
+      <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">add-reader/SKILL.md (excerpt)</span></div>
+      <div class="term-body" style="font-size:0.7rem;"><span class="c-dim">---</span>
+<span class="c-flag">name:</span> add-reader
+<span class="c-flag">description:</span> Adds a new trace reader
+<span class="c-flag">allowed-tools:</span> Read Edit Write Grep Glob
+<span class="c-dim">---</span>
+
+Add a new trace reader to ingest session
+traces from a new AI coding tool.
+
+<span class="c-hdr">## Architecture</span>
+All readers subclass <span class="c-hi">BaseReader</span> in
+<span class="c-str">src/utils/ingestion/base.py</span>
+
+<span class="c-hdr">## Steps</span>
+<span class="c-hi">1.</span> Identify the trace format
+<span class="c-hi">2.</span> Create <span class="c-str">src/utils/ingestion/&lt;name&gt;.py</span>
+<span class="c-hi">3.</span> Add tool name mappings to TOOL_NAME_MAP
+<span class="c-hi">4.</span> Register in __init__.py + main.py
+<span class="c-hi">5.</span> Add config support
+
+<span class="c-hdr">## Critical constraints</span>
+- Must return canonical message schema
+- Call normalize_messages() before return
+- Never derive session_id from filename</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 10: Hypothesis ===================== -->
+<div class="slide">
+  <div class="section-num">03</div>
   <h2>Hypothesis Generation</h2>
   <div class="divider"></div>
-  <p style="max-width:700px; margin-bottom:1em;">Statistically test which agent behaviors predict user rejection.</p>
-  <pre><code><span class="cmd">retro</span> <span class="flag">--hypogen --dir .</span>     <span class="comment"># find patterns</span>
-<span class="cmd">retro</span> <span class="flag">--submit --dir .</span>      <span class="comment"># share with community</span>
-<span class="cmd">retro</span> <span class="flag">--pull --dir .</span>        <span class="comment"># verify community patterns</span></code></pre>
-  <div style="margin-top:1.5em; text-align:left; max-width:700px;">
-    <p style="font-size:1rem;">Example finding:</p>
-    <pre><code><span style="color:var(--green)">[sig]</span> edit_without_read   p=0.003  OR=2.45
-  "Agent edits a file it never Read" &rarr; 2.4x more likely to be rejected</code></pre>
+  <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.4em;">Chi-squared tests on agent behavior patterns. Real output:</p>
+  <div class="term">
+    <div class="term-bar"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-title">retro --hypogen --dir .</span></div>
+    <div class="term-body" style="font-size:0.78rem;">[retro] Found 47 session traces
+[retro] Parsed 312 rounds across 47 sessions
+[retro] 284 accepted, 28 rejected (9.0% rejection rate)
+[retro] Verifying 12 seed hypotheses ...
+
+  <span class="c-sig">[sig]</span>  <span class="c-id">edit_without_read         </span>  p=<span class="c-val">0.0031</span>  OR=<span class="c-val">2.45</span>  n+=23  n-=289
+  <span class="c-sig">[sig]</span>  <span class="c-id">repeated_bash_errors      </span>  p=<span class="c-val">0.0042</span>  OR=<span class="c-val">3.12</span>  n+=15  n-=297
+  <span class="c-sig">[sig]</span>  <span class="c-id">edit_without_search       </span>  p=<span class="c-val">0.0187</span>  OR=<span class="c-val">1.89</span>  n+=41  n-=271
+  <span class="c-ns">[n/s]</span>  <span class="c-id">more_edits_than_reads     </span>  p=<span class="c-dim">0.2100</span>  OR=<span class="c-dim">1.32</span>  n+=38  n-=274
+  <span class="c-ns">[n/s]</span>  <span class="c-id">many_files_edited         </span>  p=<span class="c-dim">0.4500</span>  OR=<span class="c-dim">1.11</span>  n+=12  n-=300
+
+[retro] Iteration 1 — proposing new hypotheses (LLM)
+  <span class="c-sig">[sig]</span>  <span class="c-id">long_bash_without_check   </span>  p=<span class="c-val">0.0290</span>  OR=<span class="c-val">2.01</span>  n+=19  n-=293
+
+  <span class="c-hi">&#x2192; Agents that edit without reading are 2.4x more likely to be rejected</span>
+  <span class="c-hi">&#x2192; Repeated Bash errors predict 3.1x higher rejection rate</span></div>
+  </div>
+  <div style="display:flex; gap:16px; margin-top:0.5em; justify-content:center;">
+    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --submit</code>
+    <span style="color:var(--dim);">&bull;</span>
+    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --pull</code>
+    <span style="color:var(--dim);">&bull;</span>
+    <code style="font-size:0.8rem;"><span class="c-cmd">retro</span> --contribute</code>
   </div>
 </div>
 
-<!-- Slide 10: AnalyzeMe -->
-<div class="slide" id="s9">
-  <h2>AnalyzeMe &mdash; Your AI Coding Wrapped</h2>
+<!-- ===================== SLIDE 11: AnalyzeMe ===================== -->
+<div class="slide">
+  <div class="section-num">04</div>
+  <h2>AnalyzeMe &mdash; AI Coding Wrapped</h2>
   <div class="divider"></div>
-  <pre><code><span class="cmd">retro</span> <span class="flag">--analyzeme --dir .</span>
-<span class="cmd">retro</span> <span class="flag">--analyzeme --save-html --dir .</span></code></pre>
-  <div class="card-grid" style="margin-top:1em;">
-    <div class="card">
-      <h3>Persona</h3>
-      <p>"The Architect", "The Terminal Wizard", "The Perfectionist"</p>
+  <div class="two-col" style="max-width:920px;">
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="wr wr-dark">
+        <div style="text-align:center; font-size:2.8rem;">&#x1F9D9;</div>
+        <div style="text-align:center; font-size:1.3rem; font-weight:800; margin:6px 0;">The Terminal Wizard</div>
+        <div style="text-align:center; color:var(--muted); font-size:0.82rem; font-style:italic;">Bash is your native tongue. You live in the command line.</div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px; text-align:center;">
+          <div><div class="wr-stat" style="color:var(--purple);">47</div><div class="wr-label">Sessions</div></div>
+          <div><div class="wr-stat" style="color:var(--purple);">312</div><div class="wr-label">Rounds</div></div>
+          <div><div class="wr-stat" style="color:var(--purple);">23</div><div class="wr-label">Days</div></div>
+        </div>
+      </div>
+      <div class="wr wr-dark">
+        <h3>&#x1F527; Your Toolkit <span style="font-weight:400; font-size:0.8rem; color:var(--muted);">2,847 calls</span></h3>
+        <div class="bar-row"><span class="bar-lbl">Bash</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:100%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">892</span></div>
+        <div class="bar-row"><span class="bar-lbl">Read</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:72%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">641</span></div>
+        <div class="bar-row"><span class="bar-lbl">Edit</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:51%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">458</span></div>
+        <div class="bar-row"><span class="bar-lbl">Grep</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:38%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">340</span></div>
+        <div class="bar-row"><span class="bar-lbl">Glob</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:23%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">204</span></div>
+        <div class="bar-row"><span class="bar-lbl">Agent</span><div class="bar-track"><div class="bar-fill anim-bar" style="width:14%; background:linear-gradient(90deg,var(--cyan),var(--purple));"></div></div><span class="bar-val">128</span></div>
+      </div>
     </div>
-    <div class="card">
-      <h3>Toolkit</h3>
-      <p>Bar chart of your most-used tools</p>
-    </div>
-    <div class="card">
-      <h3>Schedule</h3>
-      <p>Night Owl vs Early Bird, peak hour, longest streak</p>
-    </div>
-    <div class="card">
-      <h3>Patience Score</h3>
-      <p>How often you say "No" to your AI</p>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="wr wr-dark">
+        <h3>&#x23F0; &#x1F989; Night Owl</h3>
+        <div style="font-size:0.85rem; color:#9ca3af; margin:6px 0;">Peak hour: <strong style="color:var(--text);">23:00</strong> &bull; Busiest: <strong style="color:var(--text);">Wednesday</strong></div>
+        <div style="font-size:0.85rem; color:#9ca3af;">Longest streak: <strong style="color:var(--text);">7 days</strong> &#x1F525;</div>
+      </div>
+      <div class="wr wr-dark">
+        <h3>&#x270F;&#xFE0F; Editing Style: &#x1F6E1;&#xFE0F; Careful</h3>
+        <div style="font-size:0.8rem; color:#6b7280;">Read-before-edit score:</div>
+        <div class="meter"><div class="meter-fill anim-bar" style="width:78%; background:linear-gradient(90deg,var(--cyan),var(--green));"></div></div>
+        <div style="font-size:0.8rem; color:#6b7280;">78% careful &bull; 22% cowboy</div>
+      </div>
+      <div class="wr wr-dark">
+        <h3>&#x1F9D8; Patience: 91%</h3>
+        <div class="meter"><div class="meter-fill anim-bar" style="width:91%; background:linear-gradient(90deg,var(--pink),var(--green));"></div></div>
+        <div style="font-size:0.8rem; color:#6b7280;">Said No <strong>28</strong> / 312 rounds</div>
+        <div style="font-size:0.78rem; color:var(--dim); font-style:italic; margin-top:3px;">You're extremely chill. Your AI appreciates it.</div>
+      </div>
+      <div class="wr wr-dark">
+        <h3>&#x2728; Fun Facts</h3>
+        <div class="fact">Your go-to tool was Bash (31%). You two are inseparable.</div>
+        <div class="fact">7-day coding streak. Dedication level: maximum.</div>
+        <div class="fact">You code at night. The bugs can't see you in the dark.</div>
+        <div class="fact">AI compatibility: 87%. A strong partnership.</div>
+      </div>
     </div>
   </div>
+  <pre style="margin-top:0.3em; max-width:550px;"><code><span class="c-cmd">retro</span> <span class="c-flag">--analyzeme --dir .</span>              <span class="c-cmt"># terminal cards</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--analyzeme --save-html --dir .</span>  <span class="c-cmt"># shareable HTML</span></code></pre>
 </div>
 
-<!-- Slide 11: Multi-Agent Support -->
-<div class="slide" id="s10">
+<!-- ===================== SLIDE 12: Multi-agent ===================== -->
+<div class="slide">
   <h2>Works With Your Stack</h2>
   <div class="divider"></div>
-  <div class="two-col">
+  <div class="two-col" style="max-width:760px;">
     <div>
-      <h3>Inputs (traces)</h3>
+      <h3 style="color:var(--cyan);">Inputs (traces)</h3>
       <table style="max-width:100%">
         <tr><td>Claude Code</td><td><code>~/.claude/projects/</code></td></tr>
         <tr><td>Cursor</td><td><code>~/.cursor/projects/</code></td></tr>
@@ -285,7 +619,7 @@
       </table>
     </div>
     <div>
-      <h3>Outputs (rules)</h3>
+      <h3 style="color:var(--cyan);">Outputs (rules)</h3>
       <table style="max-width:100%">
         <tr><td>Claude Code</td><td><code>CLAUDE.md</code></td></tr>
         <tr><td>Cursor</td><td><code>.cursor/rules/retro.mdc</code></td></tr>
@@ -293,66 +627,78 @@
       </table>
     </div>
   </div>
-  <pre style="margin-top:1.5em"><code><span class="comment"># retro_config.yaml</span>
+  <pre style="margin-top:0.8em; max-width:500px;"><code><span class="c-cmt"># retro_config.yaml</span>
 sources:
   inputs:  [claude-code, cursor, codex]
   outputs: [claude-code, cursor]</code></pre>
+  <p style="margin-top:0.8em; font-size:0.9rem;">Plugin architecture: add new agents by implementing <code>BaseReader</code> + <code>BaseMarkdownWriter</code> ABCs.</p>
 </div>
 
-<!-- Slide 12: Architecture -->
-<div class="slide" id="s11">
-  <h2>Architecture Overview</h2>
+<!-- ===================== SLIDE 13: Architecture ===================== -->
+<div class="slide">
+  <h2>Architecture</h2>
   <div class="divider"></div>
-  <div class="flow" style="flex-direction:column; gap:16px;">
+  <div class="flow" style="flex-direction:column; gap:12px;">
     <div class="flow" style="margin:0;">
-      <div class="flow-box">Claude Traces</div>
-      <div class="flow-box">Cursor Traces</div>
-      <div class="flow-box">Codex Traces</div>
+      <div class="flow-box">Claude<small>ClaudeReader</small></div>
+      <div class="flow-box">Cursor<small>CursorReader</small></div>
+      <div class="flow-box">Codex<small>CodexReader</small></div>
     </div>
-    <div class="flow-arrow" style="transform:rotate(90deg);">&rarr;</div>
-    <div class="flow-box highlight" style="min-width:400px;">Canonical Message Schema<br><span style="font-size:0.8rem;color:var(--muted)">Readers normalize all sources into one format</span></div>
-    <div class="flow-arrow" style="transform:rotate(90deg);">&rarr;</div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">&darr;</div>
+    <div class="flow-box hl" style="min-width:480px;">Canonical Message Schema<small>role, content, tool_names, tool_args &mdash; normalized across all sources</small></div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">&darr;</div>
     <div class="flow" style="margin:0;">
-      <div class="flow-box">Playbook</div>
-      <div class="flow-box">Skills</div>
-      <div class="flow-box">Hypotheses</div>
-      <div class="flow-box">Analytics</div>
+      <div class="flow-box" style="border-color:rgba(74,222,128,0.2);">Playbook<small>Reflector &rarr; Curator</small></div>
+      <div class="flow-box" style="border-color:rgba(167,139,250,0.2);">Skills<small>Analyzer &rarr; Generator</small></div>
+      <div class="flow-box" style="border-color:rgba(96,165,250,0.2);">Hypotheses<small>Features &rarr; Chi-squared</small></div>
+      <div class="flow-box" style="border-color:rgba(244,114,182,0.2);">Analytics<small>Stats &rarr; Renderer</small></div>
+    </div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">&darr;</div>
+    <div class="flow" style="margin:0;">
+      <div class="flow-box">CLAUDE.md</div>
+      <div class="flow-box">.claude/skills/</div>
+      <div class="flow-box">HYPOTHESES.md</div>
+      <div class="flow-box">wrapped.html</div>
     </div>
   </div>
 </div>
 
-<!-- Slide 13: All Commands -->
-<div class="slide" id="s12">
+<!-- ===================== SLIDE 14: Command Reference ===================== -->
+<div class="slide">
   <h2>Command Reference</h2>
   <div class="divider"></div>
   <table>
-    <tr><th>Command</th><th>What it does</th></tr>
-    <tr><td><code>retro --offline</code></td><td>One-pass playbook update</td></tr>
-    <tr><td><code>retro --up / --down</code></td><td>Start / stop background daemon</td></tr>
-    <tr><td><code>retro --export-skills</code></td><td>Generate shareable skills</td></tr>
-    <tr><td><code>retro --import-skills</code></td><td>Import skills into Claude Code</td></tr>
-    <tr><td><code>retro --hypogen</code></td><td>Hypothesis generation</td></tr>
-    <tr><td><code>retro --analyzeme</code></td><td>AI Coding Wrapped</td></tr>
-    <tr><td><code>retro --monitor</code></td><td>Blast radius dashboard</td></tr>
+    <tr><th>Command</th><th>What it does</th><th></th></tr>
+    <tr><td><code>retro --offline</code></td><td>One-pass playbook update</td><td><span class="label label-green">core</span></td></tr>
+    <tr><td><code>retro --up</code> / <code>--down</code></td><td>Start / stop background daemon</td><td><span class="label label-green">core</span></td></tr>
+    <tr><td><code>retro --offline --verbose</code></td><td>Interactive mode &mdash; approve each change</td><td><span class="label label-green">core</span></td></tr>
+    <tr><td><code>retro --export-skills -o FILE</code></td><td>Generate &amp; bundle skills</td><td><span class="label label-purple">skills</span></td></tr>
+    <tr><td><code>retro --import-skills -i FILE</code></td><td>Import skills (merge / interactive / dry-run)</td><td><span class="label label-purple">skills</span></td></tr>
+    <tr><td><code>retro --hypogen</code></td><td>Statistical hypothesis testing</td><td><span class="label label-blue">research</span></td></tr>
+    <tr><td><code>retro --analyzeme</code></td><td>AI Coding Wrapped</td><td><span class="label label-pink">fun</span></td></tr>
+    <tr><td><code>retro --monitor</code></td><td>Blast radius dashboard</td><td><span class="label label-yellow">ops</span></td></tr>
   </table>
-  <p style="margin-top:1em; color:var(--muted); font-size:1rem;">All commands accept <code>--dir PATH</code> to target a specific project</p>
+  <p style="margin-top:0.6em; color:var(--muted); font-size:0.85rem;">All commands accept <code>--dir PATH</code> &bull; <code>--quiet</code> suppresses output &bull; <code>--no-llm</code> skips LLM calls</p>
 </div>
 
-<!-- Slide 14: Getting Started -->
-<div class="slide" id="s13">
-  <h1>Get Started</h1>
+<!-- ===================== SLIDE 15: CTA ===================== -->
+<div class="slide">
+  <h1 class="grad">Get Started</h1>
   <div class="divider"></div>
-  <pre><code><span class="cmd">pip install</span> -e .
-<span class="cmd">retro</span> <span class="flag">--offline --dir .</span>          <span class="comment"># learn from your sessions</span>
-<span class="cmd">retro</span> <span class="flag">--export-skills -o</span> share.tar.gz  <span class="comment"># share with team</span>
-<span class="cmd">retro</span> <span class="flag">--analyzeme --dir .</span>        <span class="comment"># see your AI coding stats</span></code></pre>
+  <pre><code><span class="c-cmd">pip install</span> -e .
+<span class="c-cmd">retro</span> <span class="c-flag">--offline --dir .</span>                 <span class="c-cmt"># learn from your sessions</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--export-skills -o</span> share.tar.gz   <span class="c-cmt"># share with team</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--analyzeme --dir .</span>               <span class="c-cmt"># your AI coding wrapped</span>
+<span class="c-cmd">retro</span> <span class="c-flag">--hypogen --dir .</span>                <span class="c-cmt"># find failure patterns</span></code></pre>
   <div style="margin-top:2em;">
-    <p style="font-size:1.1rem;">
-      GitHub: <a href="https://github.com/RetroCode-Org/RetroCode" style="color:var(--accent)">RetroCode-Org/RetroCode</a>
+    <p style="font-size:1.15rem; font-weight:600;">
+      <a href="https://github.com/RetroCode-Org/RetroCode" style="color:var(--accent); text-decoration:none;">github.com/RetroCode-Org/RetroCode</a>
     </p>
-    <p style="font-size:1rem; color:var(--muted); margin-top:0.5em;">
-      Full reference: <code>docs/reference.md</code>
-    </p>
+    <div style="margin-top:1em; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <a href="https://join.slack.com/t/retrocode-workspace/shared_invite/zt-3s4qb61lg-WH3V_3K0i4fe97tJed8Icw" style="text-decoration:none;"><span class="label" style="background:rgba(74,21,75,0.3); color:#d4a5ff; font-size:0.75rem;">Slack</span></a>
+      <a href="https://discord.gg/CFEcwyWC" style="text-decoration:none;"><span class="label" style="background:rgba(88,101,242,0.2); color:#8b9cf7; font-size:0.75rem;">Discord</span></a>
+      <span class="label" style="background:rgba(255,255,255,0.04); color:var(--muted); font-size:0.75rem;">docs/reference.md</span>
+    </div>
   </div>
 </div>
 
@@ -360,44 +706,64 @@ sources:
 
 <!-- Navigation -->
 <div class="nav">
-  <button onclick="prev()">&#8592; Prev</button>
-  <span id="counter" style="padding:8px 12px; color:var(--muted); font-size:0.9rem;">1 / 14</span>
-  <button onclick="next()">Next &#8594;</button>
+  <button onclick="prev()" title="Left arrow">&#8592;</button>
+  <span class="nav-count" id="counter">1 / 16</span>
+  <button onclick="next()" title="Right arrow">&#8594;</button>
 </div>
 <div class="progress" id="progress"></div>
 
 <script>
-  const slides = document.querySelectorAll('.slide');
-  let current = 0;
+const slides = document.querySelectorAll('.slide');
+let current = 0;
 
-  function show(n) {
-    slides[current].classList.remove('active');
-    current = Math.max(0, Math.min(n, slides.length - 1));
-    slides[current].classList.add('active');
-    document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
-    document.getElementById('progress').style.width = `${((current + 1) / slides.length) * 100}%`;
-  }
+function show(n) {
+  slides[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, slides.length - 1));
+  const s = slides[current];
+  s.classList.add('active');
+  document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+  document.getElementById('progress').style.width = `${((current + 1) / slides.length) * 100}%`;
 
-  function next() { show(current + 1); }
-  function prev() { show(current - 1); }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
-    if (e.key === 'Home') { e.preventDefault(); show(0); }
-    if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  // Animate bars when slide appears
+  requestAnimationFrame(() => {
+    s.querySelectorAll('.anim-bar').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0';
+      requestAnimationFrame(() => { bar.style.width = w; });
+    });
   });
+}
 
-  // Touch support
-  let touchStartX = 0;
-  document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].screenX - touchStartX;
-    if (dx < -50) next();
-    if (dx > 50) prev();
-  });
+function next() { show(current + 1); }
+function prev() { show(current - 1); }
 
-  show(0);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prev(); }
+  if (e.key === 'Home') { e.preventDefault(); show(0); }
+  if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  // Number keys jump to slide
+  if (e.key >= '1' && e.key <= '9') { show(parseInt(e.key) - 1); }
+  if (e.key === '0') { show(9); }
+});
+
+// Touch swipe
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - tx;
+  if (dx < -50) next();
+  if (dx > 50) prev();
+});
+
+// Click left/right halves
+document.querySelector('.deck').addEventListener('click', e => {
+  if (e.target.closest('.nav, a, button, pre, code')) return;
+  if (e.clientX > window.innerWidth * 0.6) next();
+  else if (e.clientX < window.innerWidth * 0.4) prev();
+});
+
+show(0);
 </script>
 </body>
 </html>

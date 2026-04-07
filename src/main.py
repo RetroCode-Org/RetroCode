@@ -498,8 +498,10 @@ def main() -> None:
     parser.add_argument("-i", "--input", default=None, metavar="FILE",
                         help="(import-skills) Import from a bundle file instead of .retro/skills/")
     parser.add_argument("--strategy", default="local-first",
-                        choices=["local-first", "retro-first", "merge"],
-                        help="(import-skills) Conflict resolution: local-first (default), retro-first, or merge")
+                        choices=["local-first", "retro-first", "merge", "interactive"],
+                        help="(import-skills) Conflict resolution: local-first (default), retro-first, merge, or interactive")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="(import-skills) Preview what would happen without writing any files")
     parser.add_argument("--source", action="append", default=None, metavar="DIR",
                         help="(import-skills) Additional skills directory to import from (repeatable)")
 
@@ -543,6 +545,7 @@ def main() -> None:
             retro_dir=str(retro_dir),
             strategy=strategy,
             sources=args.source,
+            dry_run=args.dry_run,
         )
         importer.import_skills(bundle_path=getattr(args, "input", None))
     elif args.analyzeme:
