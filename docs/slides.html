@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetroCode — Beginner Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eee;
+    --muted: #888;
+    --code-bg: #16213e;
+    --green: #4ecca3;
+    --yellow: #f9a825;
+  }
+
+  html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+  /* Slide container */
+  .deck { height: 100vh; overflow: hidden; position: relative; }
+  .slide {
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    height: 100vh; padding: 60px 80px; text-align: center; position: absolute; inset: 0;
+    animation: fadeIn 0.3s ease;
+  }
+  .slide.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Typography */
+  h1 { font-size: 3.2rem; font-weight: 800; margin-bottom: 0.5em; background: linear-gradient(135deg, var(--accent), #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 2.4rem; font-weight: 700; margin-bottom: 0.6em; color: var(--text); }
+  h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.4em; color: var(--green); }
+  p, li { font-size: 1.25rem; line-height: 1.7; color: #ccc; }
+  .subtitle { font-size: 1.5rem; color: var(--muted); margin-top: 0.3em; }
+  .big-number { font-size: 5rem; font-weight: 800; color: var(--accent); }
+  .emoji { font-size: 3rem; margin-bottom: 0.5em; }
+
+  /* Lists */
+  ul { text-align: left; max-width: 800px; margin: 0 auto; }
+  li { margin-bottom: 0.6em; list-style: none; padding-left: 1.5em; position: relative; }
+  li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  /* Code */
+  code { background: var(--code-bg); padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.95em; }
+  pre { background: var(--code-bg); border-radius: 12px; padding: 24px 32px; text-align: left; max-width: 850px; width: 100%; margin: 1em auto; overflow-x: auto; border: 1px solid #2a2a4a; }
+  pre code { background: none; padding: 0; font-size: 1.05rem; line-height: 1.6; color: #a8d8ea; }
+  .cmd { color: var(--green); }
+  .flag { color: var(--yellow); }
+  .comment { color: #666; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 900px; width: 100%; margin-top: 1em; }
+  .card {
+    background: var(--surface); border-radius: 12px; padding: 24px; text-align: left;
+    border: 1px solid #2a2a4a; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card h3 { margin-bottom: 0.3em; }
+  .card p { font-size: 1rem; color: #aaa; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; gap: 12px; margin: 1em 0; flex-wrap: wrap; justify-content: center; }
+  .flow-box {
+    background: var(--surface); border: 1px solid #2a2a4a; border-radius: 10px;
+    padding: 14px 22px; font-size: 1rem; font-weight: 600;
+  }
+  .flow-arrow { color: var(--accent); font-size: 1.5rem; }
+  .flow-box.highlight { border-color: var(--accent); background: #1a0a1e; }
+
+  /* Table */
+  table { border-collapse: collapse; margin: 1em auto; max-width: 800px; width: 100%; }
+  th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid #2a2a4a; font-size: 1.05rem; }
+  th { color: var(--green); font-weight: 600; }
+  td { color: #bbb; }
+  td code { font-size: 0.9rem; }
+
+  /* Navigation */
+  .nav {
+    position: fixed; bottom: 20px; right: 30px; display: flex; gap: 10px; z-index: 100;
+    background: var(--surface); padding: 8px 12px; border-radius: 8px; border: 1px solid #2a2a4a;
+  }
+  .nav button {
+    background: var(--code-bg); border: 1px solid #2a2a4a; color: var(--text); padding: 8px 16px;
+    border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+  }
+  .nav button:hover { border-color: var(--accent); }
+  .progress { position: fixed; bottom: 0; left: 0; height: 3px; background: var(--accent); transition: width 0.3s; }
+
+  /* Section divider */
+  .divider { width: 60px; height: 4px; background: var(--accent); border-radius: 2px; margin: 0.8em auto; }
+
+  /* Two-column */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; text-align: left; align-items: start; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- Slide 1: Title -->
+<div class="slide active" id="s0">
+  <h1>RetroCode</h1>
+  <p class="subtitle">Turn your AI coding sessions into reusable knowledge</p>
+  <div style="margin-top:2em; color:var(--muted); font-size:1rem;">
+    Works with Claude Code, Cursor, and Codex<br>
+    Supports OpenAI, Anthropic, Gemini, CommonStack
+  </div>
+</div>
+
+<!-- Slide 2: The Problem -->
+<div class="slide" id="s1">
+  <div class="emoji">&#x1F914;</div>
+  <h2>The Problem</h2>
+  <div class="divider"></div>
+  <ul>
+    <li>AI agents make the same mistakes across sessions</li>
+    <li>Corrections you give are lost when the session ends</li>
+    <li>Teammates repeat the same trial-and-error with their agents</li>
+    <li>No way to measure what's actually working (or failing)</li>
+  </ul>
+</div>
+
+<!-- Slide 3: The Solution -->
+<div class="slide" id="s2">
+  <div class="emoji">&#x1F680;</div>
+  <h2>RetroCode Turns Sessions Into Knowledge</h2>
+  <div class="divider"></div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Playbook Generation</h3>
+      <p>Learns rules from your corrections and writes them into your agent's config files</p>
+    </div>
+    <div class="card">
+      <h3>Skills Sharing</h3>
+      <p>Export repo-specific agent skills and share with teammates</p>
+    </div>
+    <div class="card">
+      <h3>Hypothesis Testing</h3>
+      <p>Statistically identifies which agent behaviors predict rejection</p>
+    </div>
+    <div class="card">
+      <h3>AnalyzeMe</h3>
+      <p>Spotify Wrapped for your AI coding &mdash; personas, habits, fun stats</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 4: How It Works -->
+<div class="slide" id="s3">
+  <h2>How Playbook Generation Works</h2>
+  <div class="divider"></div>
+  <div class="flow">
+    <div class="flow-box">Session Traces<br><span style="font-size:0.8rem;color:var(--muted)">.jsonl files</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box highlight">Reflector<br><span style="font-size:0.8rem;color:var(--muted)">extracts friction</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box highlight">Curator<br><span style="font-size:0.8rem;color:var(--muted)">adds/modifies/deletes</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Playbook<br><span style="font-size:0.8rem;color:var(--muted)">CLAUDE.md etc.</span></div>
+  </div>
+  <p style="margin-top:1.5em; max-width:700px;">Every rule stems from <strong>real friction</strong> &mdash; corrections, wrong assumptions, over-engineering. Not generic advice.</p>
+</div>
+
+<!-- Slide 5: Quickstart -->
+<div class="slide" id="s4">
+  <h2>Quickstart</h2>
+  <div class="divider"></div>
+  <pre><code><span class="comment"># 1. Install</span>
+<span class="cmd">git clone</span> https://github.com/RetroCode-Org/RetroCode
+<span class="cmd">cd</span> RetroCode && <span class="cmd">pip install</span> -e .
+
+<span class="comment"># 2. Set your API key</span>
+<span class="cmd">export</span> COMMONSTACK_API_KEY=your_key_here
+
+<span class="comment"># 3. Go to your project and run</span>
+<span class="cmd">cd</span> ~/my-project
+<span class="cmd">retro</span> <span class="flag">--offline --dir .</span></code></pre>
+  <p style="margin-top:1em;">That's it. Your <code>CLAUDE.md</code> now has learned rules.</p>
+</div>
+
+<!-- Slide 6: Running Modes -->
+<div class="slide" id="s5">
+  <h2>Running Modes</h2>
+  <div class="divider"></div>
+  <table>
+    <tr><th>Mode</th><th>Command</th><th>Behavior</th></tr>
+    <tr><td>One-pass</td><td><code>retro --offline</code></td><td>Process all new sessions, update playbook, exit</td></tr>
+    <tr><td>Interactive</td><td><code>retro --offline --verbose</code></td><td>Review each change before applying</td></tr>
+    <tr><td>Daemon</td><td><code>retro --up</code></td><td>Background polling &mdash; auto-updates continuously</td></tr>
+    <tr><td>Debug</td><td><code>retro --foreground</code></td><td>Daemon in foreground &mdash; see all output live</td></tr>
+  </table>
+  <p style="margin-top:1em; color:var(--muted);">Stop the daemon with <code>retro --down</code></p>
+</div>
+
+<!-- Slide 7: Skills Export -->
+<div class="slide" id="s6">
+  <h2>Skills Sharing</h2>
+  <div class="divider"></div>
+  <div class="flow">
+    <div class="flow-box">Dev A<br><span style="font-size:0.8rem;color:var(--muted)">export-skills</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box highlight">.tar.gz<br><span style="font-size:0.8rem;color:var(--muted)">portable bundle</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">Dev B<br><span style="font-size:0.8rem;color:var(--muted)">import-skills</span></div>
+  </div>
+  <pre style="margin-top:1.5em"><code><span class="comment"># Developer A: generate and bundle</span>
+<span class="cmd">retro</span> <span class="flag">--export-skills -o</span> my-skills.tar.gz
+
+<span class="comment"># Developer B: import from the bundle</span>
+<span class="cmd">retro</span> <span class="flag">--import-skills -i</span> my-skills.tar.gz</code></pre>
+  <p style="margin-top:1em; max-width:700px;">Skills encode non-obvious repo knowledge &mdash; extension points, debugging workflows, architectural patterns &mdash; things an agent can't discover alone.</p>
+</div>
+
+<!-- Slide 8: Skills Merge Strategies -->
+<div class="slide" id="s7">
+  <h2>Import Merge Strategies</h2>
+  <div class="divider"></div>
+  <table>
+    <tr><th>Strategy</th><th>Flag</th><th>What Happens</th></tr>
+    <tr><td>Local-first</td><td><code>--strategy local-first</code></td><td>Keep your version, skip shared (default)</td></tr>
+    <tr><td>Retro-first</td><td><code>--strategy retro-first</code></td><td>Overwrite local with shared version</td></tr>
+    <tr><td>Merge</td><td><code>--strategy merge</code></td><td>Keep local, append new sections from shared</td></tr>
+  </table>
+  <pre style="margin-top:1em"><code><span class="comment"># Merge: best of both worlds</span>
+<span class="cmd">retro</span> <span class="flag">--import-skills -i</span> teammate.tar.gz <span class="flag">--strategy merge</span></code></pre>
+</div>
+
+<!-- Slide 9: Hypothesis Generation -->
+<div class="slide" id="s8">
+  <h2>Hypothesis Generation</h2>
+  <div class="divider"></div>
+  <p style="max-width:700px; margin-bottom:1em;">Statistically test which agent behaviors predict user rejection.</p>
+  <pre><code><span class="cmd">retro</span> <span class="flag">--hypogen --dir .</span>     <span class="comment"># find patterns</span>
+<span class="cmd">retro</span> <span class="flag">--submit --dir .</span>      <span class="comment"># share with community</span>
+<span class="cmd">retro</span> <span class="flag">--pull --dir .</span>        <span class="comment"># verify community patterns</span></code></pre>
+  <div style="margin-top:1.5em; text-align:left; max-width:700px;">
+    <p style="font-size:1rem;">Example finding:</p>
+    <pre><code><span style="color:var(--green)">[sig]</span> edit_without_read   p=0.003  OR=2.45
+  "Agent edits a file it never Read" &rarr; 2.4x more likely to be rejected</code></pre>
+  </div>
+</div>
+
+<!-- Slide 10: AnalyzeMe -->
+<div class="slide" id="s9">
+  <h2>AnalyzeMe &mdash; Your AI Coding Wrapped</h2>
+  <div class="divider"></div>
+  <pre><code><span class="cmd">retro</span> <span class="flag">--analyzeme --dir .</span>
+<span class="cmd">retro</span> <span class="flag">--analyzeme --save-html --dir .</span></code></pre>
+  <div class="card-grid" style="margin-top:1em;">
+    <div class="card">
+      <h3>Persona</h3>
+      <p>"The Architect", "The Terminal Wizard", "The Perfectionist"</p>
+    </div>
+    <div class="card">
+      <h3>Toolkit</h3>
+      <p>Bar chart of your most-used tools</p>
+    </div>
+    <div class="card">
+      <h3>Schedule</h3>
+      <p>Night Owl vs Early Bird, peak hour, longest streak</p>
+    </div>
+    <div class="card">
+      <h3>Patience Score</h3>
+      <p>How often you say "No" to your AI</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 11: Multi-Agent Support -->
+<div class="slide" id="s10">
+  <h2>Works With Your Stack</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3>Inputs (traces)</h3>
+      <table style="max-width:100%">
+        <tr><td>Claude Code</td><td><code>~/.claude/projects/</code></td></tr>
+        <tr><td>Cursor</td><td><code>~/.cursor/projects/</code></td></tr>
+        <tr><td>Codex</td><td><code>~/.codex/sessions/</code></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Outputs (rules)</h3>
+      <table style="max-width:100%">
+        <tr><td>Claude Code</td><td><code>CLAUDE.md</code></td></tr>
+        <tr><td>Cursor</td><td><code>.cursor/rules/retro.mdc</code></td></tr>
+        <tr><td>Codex</td><td><code>AGENTS.md</code></td></tr>
+      </table>
+    </div>
+  </div>
+  <pre style="margin-top:1.5em"><code><span class="comment"># retro_config.yaml</span>
+sources:
+  inputs:  [claude-code, cursor, codex]
+  outputs: [claude-code, cursor]</code></pre>
+</div>
+
+<!-- Slide 12: Architecture -->
+<div class="slide" id="s11">
+  <h2>Architecture Overview</h2>
+  <div class="divider"></div>
+  <div class="flow" style="flex-direction:column; gap:16px;">
+    <div class="flow" style="margin:0;">
+      <div class="flow-box">Claude Traces</div>
+      <div class="flow-box">Cursor Traces</div>
+      <div class="flow-box">Codex Traces</div>
+    </div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">&rarr;</div>
+    <div class="flow-box highlight" style="min-width:400px;">Canonical Message Schema<br><span style="font-size:0.8rem;color:var(--muted)">Readers normalize all sources into one format</span></div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">&rarr;</div>
+    <div class="flow" style="margin:0;">
+      <div class="flow-box">Playbook</div>
+      <div class="flow-box">Skills</div>
+      <div class="flow-box">Hypotheses</div>
+      <div class="flow-box">Analytics</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 13: All Commands -->
+<div class="slide" id="s12">
+  <h2>Command Reference</h2>
+  <div class="divider"></div>
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>retro --offline</code></td><td>One-pass playbook update</td></tr>
+    <tr><td><code>retro --up / --down</code></td><td>Start / stop background daemon</td></tr>
+    <tr><td><code>retro --export-skills</code></td><td>Generate shareable skills</td></tr>
+    <tr><td><code>retro --import-skills</code></td><td>Import skills into Claude Code</td></tr>
+    <tr><td><code>retro --hypogen</code></td><td>Hypothesis generation</td></tr>
+    <tr><td><code>retro --analyzeme</code></td><td>AI Coding Wrapped</td></tr>
+    <tr><td><code>retro --monitor</code></td><td>Blast radius dashboard</td></tr>
+  </table>
+  <p style="margin-top:1em; color:var(--muted); font-size:1rem;">All commands accept <code>--dir PATH</code> to target a specific project</p>
+</div>
+
+<!-- Slide 14: Getting Started -->
+<div class="slide" id="s13">
+  <h1>Get Started</h1>
+  <div class="divider"></div>
+  <pre><code><span class="cmd">pip install</span> -e .
+<span class="cmd">retro</span> <span class="flag">--offline --dir .</span>          <span class="comment"># learn from your sessions</span>
+<span class="cmd">retro</span> <span class="flag">--export-skills -o</span> share.tar.gz  <span class="comment"># share with team</span>
+<span class="cmd">retro</span> <span class="flag">--analyzeme --dir .</span>        <span class="comment"># see your AI coding stats</span></code></pre>
+  <div style="margin-top:2em;">
+    <p style="font-size:1.1rem;">
+      GitHub: <a href="https://github.com/RetroCode-Org/RetroCode" style="color:var(--accent)">RetroCode-Org/RetroCode</a>
+    </p>
+    <p style="font-size:1rem; color:var(--muted); margin-top:0.5em;">
+      Full reference: <code>docs/reference.md</code>
+    </p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button onclick="prev()">&#8592; Prev</button>
+  <span id="counter" style="padding:8px 12px; color:var(--muted); font-size:0.9rem;">1 / 14</span>
+  <button onclick="next()">Next &#8594;</button>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function show(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+    document.getElementById('progress').style.width = `${((current + 1) / slides.length) * 100}%`;
+  }
+
+  function next() { show(current + 1); }
+  function prev() { show(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    if (dx < -50) next();
+    if (dx > 50) prev();
+  });
+
+  show(0);
+</script>
+</body>
+</html>

@@ -488,6 +488,21 @@ def main() -> None:
     parser.add_argument("--save-html", action="store_true",
                         help="(analyzeme) Also save a shareable HTML report")
 
+    # Skills export / import
+    parser.add_argument("--export-skills", action="store_true",
+                        help="Generate shareable agent skills from repo experience into .retro/skills/")
+    parser.add_argument("--import-skills", action="store_true",
+                        help="Import shared skills from .retro/skills/ into .claude/skills/ for Claude Code")
+    parser.add_argument("-o", "--output", default=None, metavar="FILE",
+                        help="(export-skills) Bundle skills into a portable file (e.g. skills.tar.gz)")
+    parser.add_argument("-i", "--input", default=None, metavar="FILE",
+                        help="(import-skills) Import from a bundle file instead of .retro/skills/")
+    parser.add_argument("--strategy", default="local-first",
+                        choices=["local-first", "retro-first", "merge"],
+                        help="(import-skills) Conflict resolution: local-first (default), retro-first, or merge")
+    parser.add_argument("--source", action="append", default=None, metavar="DIR",
+                        help="(import-skills) Additional skills directory to import from (repeatable)")
+
     # Monitoring
     parser.add_argument("--monitor", action="store_true",
                         help="Start the blast radius monitoring web dashboard")
@@ -510,7 +525,27 @@ def main() -> None:
     playbook_path = args.playbook or str(retro_dir / "playbook.txt")
     claude_md_path = args.claude_md or str(Path(working_dir) / "CLAUDE.md")
 
-    if args.analyzeme:
+    if args.export_skills:
+        from src.skillsExport import SkillsExporter
+        exporter = SkillsExporter(
+            working_dir=working_dir,
+            retro_dir=str(retro_dir),
+            playbook_path=playbook_path,
+            model=cfg.default_model,
+            no_llm=getattr(args, "no_llm", False),
+        )
+        exporter.export(bundle_path=args.output)
+    elif args.import_skills:
+        from src.skillsExport import SkillsImporter, MergeStrategy
+        strategy = MergeStrategy(args.strategy)
+        importer = SkillsImporter(
+            working_dir=working_dir,
+            retro_dir=str(retro_dir),
+            strategy=strategy,
+            sources=args.source,
+        )
+        importer.import_skills(bundle_path=getattr(args, "input", None))
+    elif args.analyzeme:
         from src.analyzeme.run import run_analyzeme
         run_analyzeme(working_dir, retro_dir, save_html=args.save_html)
     elif args.monitor:

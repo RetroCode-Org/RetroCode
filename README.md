@@ -16,6 +16,7 @@ A plugin for AI coding agents (Claude Code, Cursor, Codex) that adds capabilitie
 
 **What you get:**
 - **Playbook Generation** — Automatically builds and maintains project-specific rules from your past sessions, written directly into your agent's rule files
+- **Skills Sharing** — Export repo-specific agent skills and share them with teammates via bundles or git
 - **Hypothesis Generation** — Statistically identifies which agent behaviors predict user rejection, with community sharing
 - **AnalyzeMe** — Your AI Coding Wrapped: Spotify-style fun stats about your vibe coding patterns, personas, and habits
 - **AI Code Blast Radius** — Automatically estimates the blast radius of a code edit by identifying how many execution paths and subsystems depend on the modified code
@@ -111,6 +112,54 @@ retro --analyzeme --save-html --dir .   # also save a shareable HTML report
 The `--save-html` flag generates a dark-themed, shareable HTML page at `.retro/wrapped.html` with gradient cards and animated bars.
 
 Tool names are normalized across sources — Codex's `exec_command` becomes `Bash`, Cursor's `read_file_tool` becomes `Read`, etc. — so your stats are consistent regardless of which agents you use.
+
+## Skills Sharing
+
+Generate shareable agent skills from your repo experience and share them with teammates. Skills are structured instruction files (SKILL.md) that encode non-obvious repo knowledge — extension point patterns, debugging workflows, architectural conventions — things an AI agent can't discover by reading the code alone.
+
+```bash
+# Generate skills from your traces + codebase analysis
+retro --export-skills --dir .
+
+# Bundle into a portable file to send to a teammate
+retro --export-skills -o skills.tar.gz --dir .
+```
+
+**Sharing with teammates:**
+
+```bash
+# Developer A: generate and bundle
+retro --export-skills -o my-skills.tar.gz --dir .
+
+# Send my-skills.tar.gz to teammate (Slack, email, shared drive)
+
+# Developer B: import from the bundle
+retro --import-skills -i my-skills.tar.gz --dir .
+```
+
+**Or via git** — commit `.retro/skills/` to the repo, then teammates import:
+
+```bash
+retro --import-skills --dir .       # imports from .retro/skills/ → .claude/skills/
+```
+
+**Merge strategies** when a skill exists both locally and in the shared source:
+
+| Strategy | Flag | Behavior |
+|---|---|---|
+| **Local-first** *(default)* | `--strategy local-first` | Keep your local version, skip shared |
+| **Retro-first** | `--strategy retro-first` | Overwrite local with shared version |
+| **Merge** | `--strategy merge` | Keep local content, append new sections from shared |
+
+```bash
+# Import with merge — best of both worlds
+retro --import-skills -i teammate.tar.gz --strategy merge --dir .
+
+# Import from multiple sources
+retro --import-skills --source /path/to/other/skills --dir .
+```
+
+Skills are written to `.claude/skills/` where Claude Code discovers them automatically. Each skill becomes a slash command (`/add-reader`, `/debug-daemon`, etc.) or background context depending on its configuration.
 
 ---
 
